@@ -1,33 +1,50 @@
 {% extends "base.html" %}
 {% block title %}회원가입 · 듀온{% endblock %}
 {% block content %}
-<div class="form-card">
-  <h2>듀온 시작하기</h2>
-  <p class="muted">기본 정보를 입력하면 가치관·취향 설문으로 이어져요.</p>
-  <form method="post" class="stack">
-    <label>이메일
-      <input type="email" name="email" value="{{ form.email or '' }}" required>
-    </label>
-    <label>비밀번호
-      <input type="password" name="password" required minlength="4">
-    </label>
-    <label>이름 / 닉네임
-      <input type="text" name="name" value="{{ form.name or '' }}" required>
-    </label>
-    <label>성별
-      <div class="radio-row">
-        <label class="radio"><input type="radio" name="gender" value="M" {{ 'checked' if form.gender=='M' }} required> 남성</label>
-        <label class="radio"><input type="radio" name="gender" value="F" {{ 'checked' if form.gender=='F' }}> 여성</label>
-      </div>
-    </label>
-    <label>출생연도
-      <input type="number" name="birth_year" min="1950" max="2010" placeholder="예: 1995" value="{{ form.birth_year or '' }}" required>
-    </label>
-    <label>거주 지역 (선택)
-      <input type="text" name="location" value="{{ form.location or '' }}" placeholder="예: 서울 강남구">
-    </label>
-    <button class="btn btn-lg" type="submit">다음 단계로</button>
-  </form>
-  <p class="muted center">이미 계정이 있나요? <a href="{{ url_for('login') }}">로그인</a></p>
+<div class="auth-wrap">
+  <aside class="auth-aside">
+    <div class="auth-blob auth-blob-1"></div>
+    <div class="auth-blob auth-blob-2"></div>
+    <div class="auth-aside-inner">
+      <span class="auth-logo">듀온<span>.</span></span>
+      <h2>나와 통하는<br>사람을 만나요</h2>
+      <p>기본 정보만 입력하면 가치관·취향 설문으로 이어져요.</p>
+      <ul class="auth-points">
+        <li>몇 가지 질문으로 시작</li>
+        <li>매칭률 높은 순서로 추천</li>
+        <li>언제든 답변 수정 가능</li>
+      </ul>
+    </div>
+  </aside>
+
+  <section class="auth-form">
+    <h2>듀온 시작하기</h2>
+    <p class="muted">가입 후 바로 가치관·취향 설문이 이어져요.</p>
+    <form method="post" class="stack">
+      <label>이메일
+        <input type="email" name="email" value="{{ form.email or '' }}" placeholder="you@example.com" required>
+      </label>
+      <label>비밀번호
+        <input type="password" name="password" placeholder="4자 이상" required minlength="4">
+      </label>
+      <label>이름 / 닉네임
+        <input type="text" name="name" value="{{ form.name or '' }}" placeholder="표시될 이름" required>
+      </label>
+      <label>성별
+        <div class="radio-row">
+          <label class="radio"><input type="radio" name="gender" value="M" {{ 'checked' if form.gender=='M' }} required> 남성</label>
+          <label class="radio"><input type="radio" name="gender" value="F" {{ 'checked' if form.gender=='F' }}> 여성</label>
+        </div>
+      </label>
+      <label>출생연도
+        <input type="number" name="birth_year" min="1950" max="2010" placeholder="예: 1995" value="{{ form.birth_year or '' }}" required>
+      </label>
+      <label>거주 지역 (선택)
+        <input type="text" name="location" value="{{ form.location or '' }}" placeholder="예: 서울 강남구">
+      </label>
+      <button class="btn btn-lg" type="submit">다음 단계로</button>
+    </form>
+    <p class="muted center">이미 계정이 있나요? <a href="{{ url_for('login') }}">로그인</a></p>
+  </section>
 </div>
 {% endblock %}

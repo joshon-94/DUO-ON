@@ -1,5 +1,11 @@
 # Render 배포 설정 (https://render.com)
 # GitHub 저장소 연결 후 자동으로 이 설정을 읽어 배포합니다.
+databases:
+  - name: duon-db
+    plan: free
+    databaseName: duon
+    user: duon
+
 services:
   - type: web
     name: duon
@@ -12,3 +18,11 @@ services:
         generateValue: true
       - key: PYTHON_VERSION
         value: "3.12.6"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: duon-db
+          property: connectionString
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false

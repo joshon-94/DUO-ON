@@ -1,12 +1,12 @@
-"""듀온 - 테스트용 샘플 회원 생성 스크립트
+"""듀온 - 테스트용 샘플 회원 생성 (Flask-SQLAlchemy)
 
-    python seed.py
-
-비밀번호는 모두 'test1234' 이고, 이메일로 로그인하면 돼요.
+앱 시작 시 일반 회원이 없으면 자동으로 run()이 호출돼요.
+직접 실행하려면:  python seed.py
+비밀번호는 모두 'test1234' 입니다.
 """
 from werkzeug.security import generate_password_hash
 
-from db import get_db, init_db
+from models import db, User
 
 SAMPLE_USERS = [
     {
@@ -79,34 +79,23 @@ SAMPLE_USERS = [
 
 
 def run():
-    init_db()
-    conn = get_db()
+    """샘플 회원을 추가한다. (이미 있으면 건너뜀)"""
     pw = generate_password_hash("test1234")
     for u in SAMPLE_USERS:
-        exists = conn.execute(
-            "SELECT id FROM users WHERE email = ?", (u["email"],)
-        ).fetchone()
-        if exists:
-            print("이미 존재:", u["email"])
+        if User.query.filter_by(email=u["email"]).first():
             continue
-        cur = conn.execute(
-            """INSERT INTO users (email, password_hash, name, gender, birth_year,
-                                  location, bio, onboarded)
-               VALUES (?, ?, ?, ?, ?, ?, ?, 1)""",
-            (u["email"], pw, u["name"], u["gender"], u["birth_year"],
-             u["location"], u["bio"]),
+        user = User(
+            email=u["email"], password_hash=pw, name=u["name"],
+            gender=u["gender"], birth_year=u["birth_year"],
+            location=u["location"], bio=u["bio"], onboarded=True,
         )
-        uid = cur.lastrowid
-        for qid, val in u["answers"].items():
-            conn.execute(
-                "INSERT INTO answers (user_id, question_id, value) VALUES (?, ?, ?)",
-                (uid, qid, val),
-            )
-        print("생성:", u["name"], u["email"])
-    conn.commit()
-    conn.close()
-    print("\n샘플 계정 비밀번호는 모두 'test1234' 입니다.")
+        user.set_answers(u["answers"])
+        db.session.add(user)
+    db.session.commit()
 
 
 if __name__ == "__main__":
-    run()
+    from app import app
+    with app.app_context():
+        run()
+    print("샘플 회원 생성 완료. 비밀번호는 모두 'test1234' 입니다.")

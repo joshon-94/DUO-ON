@@ -1,8 +1,7 @@
-"""듀온 - 가치관/취향 기반 소개팅 플랫폼 (MVP)
+"""듀온 - 가치관/취향 기반 소개팅 플랫폼
 
-실행:
-    python app.py
-    -> http://127.0.0.1:5000 접속
+로컬 실행:   python app.py   -> http://127.0.0.1:5000
+배포(Render): gunicorn app:app  (DATABASE_URL 환경변수로 PostgreSQL 사용)
 """
 import datetime
 import os
@@ -13,27 +12,49 @@ from flask import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from db import get_db, init_db
+from models import db, User, Like
 from questions import (
-    QUESTIONS, QUESTION_MAP, match_score, option_label, shared_highlights
+    QUESTIONS, match_score, option_label, shared_highlights
 )
 
 app = Flask(__name__)
-# 배포 환경에서는 SECRET_KEY 환경변수 사용, 없으면 개발용 기본값
 app.secret_key = os.environ.get("SECRET_KEY", "duon-dev-secret-change-me")
+
+# DB 연결: 배포 시 DATABASE_URL(PostgreSQL), 없으면 로컬 SQLite
+db_url = os.environ.get("DATABASE_URL", "sqlite:///duon.db")
+if db_url.startswith("postgres://"):  # Render 구형 URL 보정
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = db_url
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db.init_app(app)
 
 CURRENT_YEAR = datetime.date.today().year
 
-# gunicorn 등으로 임포트될 때도 DB 테이블이 준비되도록 보장 (idempotent)
-init_db()
+# 관리자 계정 정보 (배포 시 환경변수로 지정)
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@duon.com").strip().lower()
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin1234")
 
 
-def _ensure_seed():
-    """회원이 한 명도 없으면 샘플 데이터를 넣어 빈 사이트를 방지."""
-    conn = get_db()
-    count = conn.execute("SELECT COUNT(*) AS c FROM users").fetchone()["c"]
-    conn.close()
-    if count == 0:
+def ensure_admin():
+    """관리자 계정이 없으면 생성."""
+    admin = User.query.filter_by(email=ADMIN_EMAIL).first()
+    if not admin:
+        admin = User(
+            email=ADMIN_EMAIL,
+            password_hash=generate_password_hash(ADMIN_PASSWORD),
+            name="관리자", gender="M", birth_year=1990,
+            is_admin=True, onboarded=False,
+        )
+        db.session.add(admin)
+        db.session.commit()
+    elif not admin.is_admin:
+        admin.is_admin = True
+        db.session.commit()
+
+
+def ensure_seed():
+    """일반 회원이 한 명도 없으면 샘플 데이터를 넣어 빈 사이트 방지."""
+    if User.query.filter_by(is_admin=False).count() == 0:
         try:
             import seed
             seed.run()
@@ -41,7 +62,10 @@ def _ensure_seed():
             print("seed skipped:", exc)
 
 
-_ensure_seed()
+with app.app_context():
+    db.create_all()
+    ensure_admin()
+    ensure_seed()
 
 
 # ---------- 유틸 ----------
@@ -54,37 +78,28 @@ def login_required(view):
     return wrapped
 
 
+def admin_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        user = current_user()
+        if not user or not user.is_admin:
+            abort(403)
+        return view(*args, **kwargs)
+    return wrapped
+
+
 def current_user():
     uid = session.get("user_id")
     if not uid:
         return None
-    conn = get_db()
-    user = conn.execute("SELECT * FROM users WHERE id = ?", (uid,)).fetchone()
-    conn.close()
-    return user
-
-
-def get_answers(conn, user_id):
-    rows = conn.execute(
-        "SELECT question_id, value FROM answers WHERE user_id = ?", (user_id,)
-    ).fetchall()
-    return {r["question_id"]: r["value"] for r in rows}
-
-
-PHOTO_EXTS = (".jpg", ".jpeg", ".png", ".webp")
+    return db.session.get(User, uid)
 
 
 def photo_for(user):
-    """static/photos 폴더에서 사용자 사진을 찾아 URL 반환(없으면 None).
-    파일명 규칙: 이메일 앞부분(예: minji) 또는 사용자 id."""
-    photo_dir = os.path.join(app.static_folder, "photos")
-    bases = [user["email"].split("@")[0], str(user["id"])]
-    for base in bases:
-        for ext in PHOTO_EXTS:
-            fn = base + ext
-            if os.path.exists(os.path.join(photo_dir, fn)):
-                return url_for("static", filename="photos/" + fn)
-    return None
+    """사진 URL 반환: photo_url 우선, 없으면 None(템플릿에서 그라데이션 처리)."""
+    if user is None:
+        return None
+    return user.photo_url or None
 
 
 @app.context_processor
@@ -100,7 +115,40 @@ def age_filter(birth_year):
     return CURRENT_YEAR - int(birth_year) + 1  # 한국 나이 느낌
 
 
-# ---------- 라우트 ----------
+def collect_answers_from_form(form):
+    """온보딩/관리자 폼에서 설문 답변 dict를 만든다."""
+    answers = {}
+    for q in QUESTIONS:
+        if q["type"] == "multi":
+            value = ",".join(form.getlist(q["id"]))
+        else:
+            value = form.get(q["id"], "")
+        if value:
+            answers[q["id"]] = value
+    return answers
+
+
+def group_answers(answers, my_answers=None):
+    """답변을 카테고리(values/taste)별 라벨 리스트로 정리."""
+    grouped = {"values": [], "taste": []}
+    for q in QUESTIONS:
+        val = answers.get(q["id"])
+        if not val:
+            continue
+        if q["type"] == "multi":
+            display = ", ".join(option_label(q["id"], k) for k in val.split(",") if k)
+        else:
+            display = option_label(q["id"], val)
+        same = False
+        if my_answers and q["type"] != "multi":
+            same = my_answers.get(q["id"]) == val
+        grouped[q["category"]].append(
+            {"text": q["text"], "display": display, "same": same}
+        )
+    return grouped
+
+
+# ---------- 일반 라우트 ----------
 @app.route("/")
 def index():
     if "user_id" in session:
@@ -123,26 +171,18 @@ def register():
             flash("필수 항목을 모두 입력해 주세요.", "error")
             return render_template("register.html", form=f)
 
-        conn = get_db()
-        existing = conn.execute(
-            "SELECT id FROM users WHERE email = ?", (email,)
-        ).fetchone()
-        if existing:
-            conn.close()
+        if User.query.filter_by(email=email).first():
             flash("이미 가입된 이메일이에요.", "error")
             return render_template("register.html", form=f)
 
-        cur = conn.execute(
-            """INSERT INTO users (email, password_hash, name, gender, birth_year, location)
-               VALUES (?, ?, ?, ?, ?, ?)""",
-            (email, generate_password_hash(password), name, gender,
-             int(birth_year), location),
+        user = User(
+            email=email, password_hash=generate_password_hash(password),
+            name=name, gender=gender, birth_year=int(birth_year),
+            location=location,
         )
-        conn.commit()
-        user_id = cur.lastrowid
-        conn.close()
-
-        session["user_id"] = user_id
+        db.session.add(user)
+        db.session.commit()
+        session["user_id"] = user.id
         flash("환영해요! 가치관·취향 설문을 완성하면 추천이 시작돼요.", "success")
         return redirect(url_for("onboarding"))
 
@@ -154,13 +194,11 @@ def login():
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
-        conn = get_db()
-        user = conn.execute(
-            "SELECT * FROM users WHERE email = ?", (email,)
-        ).fetchone()
-        conn.close()
-        if user and check_password_hash(user["password_hash"], password):
-            session["user_id"] = user["id"]
+        user = User.query.filter_by(email=email).first()
+        if user and check_password_hash(user.password_hash, password):
+            session["user_id"] = user.id
+            if user.is_admin:
+                return redirect(url_for("admin_list"))
             return redirect(url_for("home"))
         flash("이메일 또는 비밀번호가 올바르지 않아요.", "error")
     return render_template("login.html")
@@ -175,71 +213,46 @@ def logout():
 @app.route("/onboarding", methods=["GET", "POST"])
 @login_required
 def onboarding():
-    conn = get_db()
-    uid = session["user_id"]
+    user = current_user()
     if request.method == "POST":
-        for q in QUESTIONS:
-            if q["type"] == "multi":
-                vals = request.form.getlist(q["id"])
-                value = ",".join(vals)
-            else:
-                value = request.form.get(q["id"], "")
-            if value:
-                conn.execute(
-                    """INSERT INTO answers (user_id, question_id, value)
-                       VALUES (?, ?, ?)
-                       ON CONFLICT(user_id, question_id)
-                       DO UPDATE SET value = excluded.value""",
-                    (uid, q["id"], value),
-                )
-        conn.execute("UPDATE users SET onboarded = 1 WHERE id = ?", (uid,))
-        conn.commit()
-        conn.close()
+        user.set_answers(collect_answers_from_form(request.form))
+        user.onboarded = True
+        db.session.commit()
         flash("설문이 저장됐어요. 맞는 상대를 찾아볼까요?", "success")
         return redirect(url_for("home"))
-
-    answers = get_answers(conn, uid)
-    conn.close()
-    return render_template("onboarding.html", questions=QUESTIONS, answers=answers)
+    return render_template(
+        "onboarding.html", questions=QUESTIONS, answers=user.get_answers()
+    )
 
 
 @app.route("/home")
 @login_required
 def home():
     me = current_user()
-    if not me["onboarded"]:
+    if me.is_admin:
+        return redirect(url_for("admin_list"))
+    if not me.onboarded:
         flash("먼저 가치관·취향 설문을 완성해 주세요.", "info")
         return redirect(url_for("onboarding"))
 
-    conn = get_db()
-    my_answers = get_answers(conn, me["id"])
-
-    # 이미 좋아요 누른 상대
-    liked = {
-        r["to_user"]
-        for r in conn.execute(
-            "SELECT to_user FROM likes WHERE from_user = ?", (me["id"],)
-        ).fetchall()
-    }
-
-    # 반대 성별, 온보딩 완료, 본인 제외, 아직 좋아요 안 한 사람
-    target_gender = "F" if me["gender"] == "M" else "M"
-    candidates = conn.execute(
-        """SELECT * FROM users
-           WHERE id != ? AND onboarded = 1 AND gender = ?""",
-        (me["id"], target_gender),
-    ).fetchall()
+    my_answers = me.get_answers()
+    liked = {l.to_user for l in Like.query.filter_by(from_user=me.id).all()}
+    target_gender = "F" if me.gender == "M" else "M"
+    candidates = User.query.filter(
+        User.id != me.id, User.onboarded.is_(True),
+        User.gender == target_gender, User.is_admin.is_(False),
+    ).all()
 
     results = []
     for c in candidates:
-        if c["id"] in liked:
+        if c.id in liked:
             continue
-        c_answers = get_answers(conn, c["id"])
-        score = match_score(my_answers, c_answers)
-        shared = shared_highlights(my_answers, c_answers)
-        results.append({"user": c, "match": score, "shared": shared})
-
-    conn.close()
+        c_answers = c.get_answers()
+        results.append({
+            "user": c,
+            "match": match_score(my_answers, c_answers),
+            "shared": shared_highlights(my_answers, c_answers),
+        })
     results.sort(key=lambda r: r["match"]["score"], reverse=True)
     return render_template("home.html", results=results)
 
@@ -248,49 +261,24 @@ def home():
 @login_required
 def profile(user_id):
     me = current_user()
-    conn = get_db()
-    user = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    user = db.session.get(User, user_id)
     if not user:
-        conn.close()
         abort(404)
 
-    my_answers = get_answers(conn, me["id"])
-    their_answers = get_answers(conn, user_id)
+    my_answers = me.get_answers()
+    their_answers = user.get_answers()
     score = match_score(my_answers, their_answers)
+    grouped = group_answers(their_answers, my_answers)
 
-    # 답변을 카테고리별로 정리(라벨 포함)
-    grouped = {"values": [], "taste": []}
-    for q in QUESTIONS:
-        val = their_answers.get(q["id"])
-        if not val:
-            continue
-        if q["type"] == "multi":
-            labels = [option_label(q["id"], k) for k in val.split(",") if k]
-            display = ", ".join(labels)
-        else:
-            display = option_label(q["id"], val)
-        same = False
-        mine = my_answers.get(q["id"])
-        if mine and q["type"] != "multi":
-            same = mine == val
-        grouped[q["category"]].append(
-            {"text": q["text"], "display": display, "same": same}
-        )
+    already_liked = Like.query.filter_by(
+        from_user=me.id, to_user=user_id).first() is not None
+    likes_me = Like.query.filter_by(
+        from_user=user_id, to_user=me.id).first() is not None
 
-    already_liked = conn.execute(
-        "SELECT 1 FROM likes WHERE from_user = ? AND to_user = ?",
-        (me["id"], user_id),
-    ).fetchone() is not None
-    likes_me = conn.execute(
-        "SELECT 1 FROM likes WHERE from_user = ? AND to_user = ?",
-        (user_id, me["id"]),
-    ).fetchone() is not None
-    conn.close()
-
-    is_match = already_liked and likes_me
     return render_template(
         "profile.html", user=user, match=score, grouped=grouped,
-        already_liked=already_liked, is_match=is_match, likes_me=likes_me,
+        already_liked=already_liked, is_match=already_liked and likes_me,
+        likes_me=likes_me,
     )
 
 
@@ -298,23 +286,13 @@ def profile(user_id):
 @login_required
 def like(user_id):
     me = current_user()
-    if user_id == me["id"]:
+    if user_id == me.id:
         abort(400)
-    conn = get_db()
-    conn.execute(
-        "INSERT OR IGNORE INTO likes (from_user, to_user) VALUES (?, ?)",
-        (me["id"], user_id),
-    )
-    conn.commit()
-    mutual = conn.execute(
-        "SELECT 1 FROM likes WHERE from_user = ? AND to_user = ?",
-        (user_id, me["id"]),
-    ).fetchone() is not None
-    conn.close()
-    if mutual:
-        flash("서로 좋아요! 매칭이 성사됐어요 💛", "success")
-    else:
-        flash("좋아요를 보냈어요.", "success")
+    if not Like.query.filter_by(from_user=me.id, to_user=user_id).first():
+        db.session.add(Like(from_user=me.id, to_user=user_id))
+        db.session.commit()
+    mutual = Like.query.filter_by(from_user=user_id, to_user=me.id).first() is not None
+    flash("서로 좋아요! 매칭이 성사됐어요 💛" if mutual else "좋아요를 보냈어요.", "success")
     return redirect(request.referrer or url_for("home"))
 
 
@@ -322,21 +300,21 @@ def like(user_id):
 @login_required
 def matches():
     me = current_user()
-    conn = get_db()
-    my_answers = get_answers(conn, me["id"])
-    rows = conn.execute(
-        """SELECT u.* FROM users u
-           JOIN likes l1 ON l1.to_user = u.id AND l1.from_user = ?
-           JOIN likes l2 ON l2.from_user = u.id AND l2.to_user = ?""",
-        (me["id"], me["id"]),
-    ).fetchall()
+    my_answers = me.get_answers()
+    sent = {l.to_user for l in Like.query.filter_by(from_user=me.id).all()}
+    got = {l.from_user for l in Like.query.filter_by(to_user=me.id).all()}
+    mutual_ids = sent & got
     results = []
-    for u in rows:
-        u_answers = get_answers(conn, u["id"])
-        score = match_score(my_answers, u_answers)
-        shared = shared_highlights(my_answers, u_answers)
-        results.append({"user": u, "match": score, "shared": shared})
-    conn.close()
+    for uid in mutual_ids:
+        u = db.session.get(User, uid)
+        if not u:
+            continue
+        u_answers = u.get_answers()
+        results.append({
+            "user": u,
+            "match": match_score(my_answers, u_answers),
+            "shared": shared_highlights(my_answers, u_answers),
+        })
     results.sort(key=lambda r: r["match"]["score"], reverse=True)
     return render_template("matches.html", results=results)
 
@@ -345,36 +323,129 @@ def matches():
 @login_required
 def me_page():
     me = current_user()
-    conn = get_db()
     if request.method == "POST":
-        bio = request.form.get("bio", "").strip()
-        location = request.form.get("location", "").strip()
-        conn.execute(
-            "UPDATE users SET bio = ?, location = ? WHERE id = ?",
-            (bio, location, me["id"]),
-        )
-        conn.commit()
+        me.bio = request.form.get("bio", "").strip()
+        me.location = request.form.get("location", "").strip()
+        db.session.commit()
         flash("프로필이 저장됐어요.", "success")
-        conn.close()
         return redirect(url_for("me_page"))
-
-    my_answers = get_answers(conn, me["id"])
-    grouped = {"values": [], "taste": []}
-    for q in QUESTIONS:
-        val = my_answers.get(q["id"])
-        if not val:
-            continue
-        if q["type"] == "multi":
-            display = ", ".join(option_label(q["id"], k) for k in val.split(",") if k)
-        else:
-            display = option_label(q["id"], val)
-        grouped[q["category"]].append({"text": q["text"], "display": display})
-    conn.close()
+    grouped = group_answers(me.get_answers())
     return render_template("me.html", grouped=grouped)
 
 
+# ---------- 관리자 라우트 ----------
+@app.route("/admin")
+@admin_required
+def admin_list():
+    users = User.query.filter_by(is_admin=False).order_by(User.id.desc()).all()
+    return render_template("admin_list.html", users=users)
+
+
+@app.route("/admin/new", methods=["GET", "POST"])
+@admin_required
+def admin_new():
+    if request.method == "POST":
+        result = _save_member(None, request.form)
+        if result is True:
+            flash("회원이 추가됐어요.", "success")
+            return redirect(url_for("admin_list"))
+        # 오류 메시지 + 입력값 유지
+        return render_template(
+            "admin_form.html", questions=QUESTIONS, answers=collect_answers_from_form(request.form),
+            user=None, form=request.form, mode="new",
+        )
+    return render_template(
+        "admin_form.html", questions=QUESTIONS, answers={}, user=None,
+        form={}, mode="new",
+    )
+
+
+@app.route("/admin/<int:user_id>/edit", methods=["GET", "POST"])
+@admin_required
+def admin_edit(user_id):
+    user = db.session.get(User, user_id)
+    if not user or user.is_admin:
+        abort(404)
+    if request.method == "POST":
+        result = _save_member(user, request.form)
+        if result is True:
+            flash("회원 정보가 수정됐어요.", "success")
+            return redirect(url_for("admin_list"))
+        return render_template(
+            "admin_form.html", questions=QUESTIONS,
+            answers=collect_answers_from_form(request.form),
+            user=user, form=request.form, mode="edit",
+        )
+    return render_template(
+        "admin_form.html", questions=QUESTIONS, answers=user.get_answers(),
+        user=user, form=_user_to_form(user), mode="edit",
+    )
+
+
+@app.route("/admin/<int:user_id>/delete", methods=["POST"])
+@admin_required
+def admin_delete(user_id):
+    user = db.session.get(User, user_id)
+    if user and not user.is_admin:
+        # 관련 좋아요도 정리
+        Like.query.filter(
+            (Like.from_user == user_id) | (Like.to_user == user_id)
+        ).delete(synchronize_session=False)
+        db.session.delete(user)
+        db.session.commit()
+        flash("회원이 삭제됐어요.", "success")
+    return redirect(url_for("admin_list"))
+
+
+def _user_to_form(user):
+    return {
+        "email": user.email, "name": user.name, "gender": user.gender,
+        "birth_year": user.birth_year, "location": user.location or "",
+        "bio": user.bio or "", "photo_url": user.photo_url or "",
+    }
+
+
+def _save_member(user, form):
+    """관리자 폼으로 회원 생성/수정. 성공 시 True, 실패 시 False(플래시 설정)."""
+    email = form.get("email", "").strip().lower()
+    name = form.get("name", "").strip()
+    gender = form.get("gender")
+    birth_year = form.get("birth_year")
+    password = form.get("password", "")
+
+    if not (email and name and gender and birth_year):
+        flash("이메일·이름·성별·출생연도는 필수예요.", "error")
+        return False
+    if user is None and not password:
+        flash("새 회원은 비밀번호가 필요해요.", "error")
+        return False
+
+    # 이메일 중복 검사
+    existing = User.query.filter_by(email=email).first()
+    if existing and (user is None or existing.id != user.id):
+        flash("이미 사용 중인 이메일이에요.", "error")
+        return False
+
+    if user is None:
+        user = User(email=email, password_hash=generate_password_hash(password))
+        db.session.add(user)
+    else:
+        user.email = email
+        if password:  # 입력했을 때만 비밀번호 변경
+            user.password_hash = generate_password_hash(password)
+
+    user.name = name
+    user.gender = gender
+    user.birth_year = int(birth_year)
+    user.location = form.get("location", "").strip()
+    user.bio = form.get("bio", "").strip()
+    user.photo_url = form.get("photo_url", "").strip()
+    user.set_answers(collect_answers_from_form(form))
+    user.onboarded = True  # 관리자가 넣은 회원은 추천에 바로 노출
+    db.session.commit()
+    return True
+
+
 if __name__ == "__main__":
-    # 로컬 개발용 실행 (배포 시에는 gunicorn app:app 사용)
-    # host='0.0.0.0' : 같은 와이파이의 폰/태블릿에서도 접속 가능
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)

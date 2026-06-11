@@ -300,3 +300,79 @@ input:focus, textarea:focus { outline: none; border-color: var(--brand); backgro
   .hero-text h1 { font-size: 30px; }
   .cover { height: 230px; }
 }
+
+/* ----- 관리자 페이지 ----- */
+.admin-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.admin-head h2 { margin: 0; }
+.admin-table {
+  background: #fff; border-radius: 16px; overflow: hidden;
+  box-shadow: 0 6px 24px rgba(0,0,0,.05);
+}
+.admin-table table { width: 100%; border-collapse: collapse; }
+.admin-table th, .admin-table td {
+  padding: 14px 16px; text-align: left; border-bottom: 1px solid #f0ece8;
+  font-size: 15px;
+}
+.admin-table th {
+  background: #faf6f3; font-weight: 600; color: #7a6f68; font-size: 13px;
+}
+.admin-table tr:last-child td { border-bottom: none; }
+.row-actions { display: flex; gap: 12px; align-items: center; }
+.row-actions a { color: var(--brand); font-weight: 600; }
+.row-actions form { display: inline; margin: 0; }
+.link-danger {
+  background: none; border: none; color: #d2654f; cursor: pointer;
+  font-weight: 600; font-size: 15px; padding: 0;
+}
+.back-link { display: inline-block; margin-bottom: 12px; color: #7a6f68; }
+.empty {
+  text-align: center; padding: 48px 20px; background: #fff;
+  border-radius: 16px; box-shadow: 0 6px 24px rgba(0,0,0,.05);
+}
+.empty p { margin-bottom: 16px; color: #7a6f68; }
+.survey textarea, .survey input[type="url"] {
+  width: 100%; padding: 12px 14px; border: 1px solid #e6ded8;
+  border-radius: 12px; font: inherit; box-sizing: border-box;
+}
+
+/* ----- 로그인/인증 화면 ----- */
+.auth-wrap {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  max-width: 880px; margin: 32px auto; background: var(--card);
+  border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-lg);
+  border: 1px solid var(--line);
+}
+.auth-aside {
+  position: relative; overflow: hidden; color: #fff;
+  background: linear-gradient(150deg, var(--brand) 0%, var(--apricot) 60%, var(--taste) 130%);
+  padding: 44px 38px; display: flex; align-items: center;
+}
+.auth-aside-inner { position: relative; z-index: 1; }
+.auth-blob { position: absolute; border-radius: 50%; filter: blur(10px); opacity: .35; }
+.auth-blob-1 { width: 200px; height: 200px; background: #fff; top: -50px; right: -40px; }
+.auth-blob-2 { width: 160px; height: 160px; background: var(--taste-soft); bottom: -40px; left: -30px; opacity: .5; }
+.auth-logo { font-size: 26px; font-weight: 800; }
+.auth-logo span { opacity: .8; }
+.auth-aside h2 { font-size: 30px; line-height: 1.25; margin: 18px 0 12px; color: #fff; }
+.auth-aside p { font-size: 15px; opacity: .92; margin: 0 0 22px; }
+.auth-points { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.auth-points li { position: relative; padding-left: 24px; font-weight: 600; font-size: 14px; }
+.auth-points li::before {
+  content: "✓"; position: absolute; left: 0; top: 0;
+  width: 18px; height: 18px; border-radius: 50%; background: rgba(255,255,255,.25);
+  display: flex; align-items: center; justify-content: center; font-size: 11px;
+}
+.auth-form { padding: 48px 40px; display: flex; flex-direction: column; justify-content: center; }
+.auth-form h2 { margin: 0 0 6px; }
+.auth-form .stack { margin-top: 18px; }
+.auth-form .center { margin-top: 18px; }
+
+@media (max-width: 720px) {
+  .auth-wrap { grid-template-columns: 1fr; max-width: 460px; }
+  .auth-aside { padding: 34px 30px; }
+  .auth-aside h2 { font-size: 25px; }
+  .auth-form { padding: 34px 28px; }
+}

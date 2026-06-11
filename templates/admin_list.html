@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}회원 관리 · 듀온{% endblock %}
+{% block content %}
+<div class="admin-head">
+  <div>
+    <h2>회원 관리</h2>
+    <p class="muted">총 {{ users|length }}명의 회원이 있어요.</p>
+  </div>
+  <a class="btn" href="{{ url_for('admin_new') }}">+ 회원 추가</a>
+</div>
+
+{% if users %}
+<div class="admin-table">
+  <table>
+    <thead>
+      <tr>
+        <th>이름</th><th>성별</th><th>나이</th><th>지역</th>
+        <th>이메일</th><th>관리</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.name }}</td>
+        <td>{{ '남' if u.gender == 'M' else '여' }}</td>
+        <td>{{ u.birth_year | age }}</td>
+        <td>{{ u.location or '-' }}</td>
+        <td class="muted">{{ u.email }}</td>
+        <td class="row-actions">
+          <a href="{{ url_for('admin_edit', user_id=u.id) }}">수정</a>
+          <form method="post" action="{{ url_for('admin_delete', user_id=u.id) }}"
+                onsubmit="return confirm('{{ u.name }} 회원을 삭제할까요?');">
+            <button class="link-danger" type="submit">삭제</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty">
+  <p>아직 등록된 회원이 없어요. 첫 회원을 추가해 보세요.</p>
+  <a class="btn" href="{{ url_for('admin_new') }}">+ 회원 추가</a>
+</div>
+{% endif %}
+{% endblock %}

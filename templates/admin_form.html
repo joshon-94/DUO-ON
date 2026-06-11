@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ '회원 수정' if mode == 'edit' else '회원 추가' }} · 듀온{% endblock %}
+{% block content %}
+<div class="form-card wide">
+  <a class="back-link" href="{{ url_for('admin_list') }}">← 회원 목록</a>
+  <h2>{{ '회원 정보 수정' if mode == 'edit' else '새 회원 추가' }}</h2>
+  <p class="muted">기본 정보와 가치관·취향 설문을 입력하면 바로 추천에 노출돼요.</p>
+
+  <form method="post" class="survey">
+    <h3 class="section-title">기본 정보</h3>
+    <div class="stack">
+      <label>이메일
+        <input type="email" name="email" value="{{ form.email or '' }}" required>
+      </label>
+      <label>비밀번호
+        <input type="password" name="password"
+               {% if mode == 'new' %}required minlength="4"{% endif %}
+               placeholder="{{ '변경할 때만 입력' if mode == 'edit' else '로그인용 비밀번호' }}">
+      </label>
+      <label>이름 / 닉네임
+        <input type="text" name="name" value="{{ form.name or '' }}" required>
+      </label>
+      <label>성별
+        <div class="radio-row">
+          <label class="radio"><input type="radio" name="gender" value="M" {{ 'checked' if form.gender=='M' }} required> 남성</label>
+          <label class="radio"><input type="radio" name="gender" value="F" {{ 'checked' if form.gender=='F' }}> 여성</label>
+        </div>
+      </label>
+      <label>출생연도
+        <input type="number" name="birth_year" min="1950" max="2010" placeholder="예: 1995" value="{{ form.birth_year or '' }}" required>
+      </label>
+      <label>거주 지역
+        <input type="text" name="location" value="{{ form.location or '' }}" placeholder="예: 서울 강남구">
+      </label>
+      <label>사진 URL
+        <input type="url" name="photo_url" value="{{ form.photo_url or '' }}" placeholder="https://...">
+      </label>
+      <label>소개글
+        <textarea name="bio" rows="3" placeholder="간단한 자기소개">{{ form.bio or '' }}</textarea>
+      </label>
+    </div>
+
+    <h3 class="section-title">가치관</h3>
+    {% for q in questions if q.category == 'values' %}
+      {% include "_question.html" %}
+    {% endfor %}
+
+    <h3 class="section-title">취향</h3>
+    {% for q in questions if q.category == 'taste' %}
+      {% include "_question.html" %}
+    {% endfor %}
+
+    <button class="btn btn-lg" type="submit">{{ '수정 저장' if mode == 'edit' else '회원 추가' }}</button>
+  </form>
+</div>
+{% endblock %}

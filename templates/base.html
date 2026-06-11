@@ -10,7 +10,10 @@
   <header class="topbar">
     <a class="logo" href="{{ url_for('index') }}">듀온<span>.</span></a>
     <nav>
-      {% if me %}
+      {% if me and me.is_admin %}
+        <a href="{{ url_for('admin_list') }}">회원 관리</a>
+        <a class="ghost" href="{{ url_for('logout') }}">로그아웃</a>
+      {% elif me %}
         <a href="{{ url_for('home') }}">추천</a>
         <a href="{{ url_for('matches') }}">매칭</a>
         <a href="{{ url_for('me_page') }}">내 프로필</a>
