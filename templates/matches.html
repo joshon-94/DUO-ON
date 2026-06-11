@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}매칭 · 듀온{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h2>매칭된 인연</h2>
+  <p class="muted">서로 좋아요를 누른 상대예요.</p>
+</div>
+
+{% if not results %}
+  <div class="empty">
+    <p>아직 매칭된 상대가 없어요.</p>
+    <p class="muted">추천에서 마음에 드는 분에게 좋아요를 보내보세요.</p>
+  </div>
+{% else %}
+  <div class="card-grid">
+    {% for r in results %}
+      {% set u = r.user %}
+      <a class="match-card" href="{{ url_for('profile', user_id=u.id) }}">
+        <div class="match-badge">💛 매칭</div>
+        {% set p = photo_for(u) %}
+        <div class="photo {{ 'g' ~ (u.id % 6) if not p }}"{% if p %} style="background-image:url('{{ p }}')"{% endif %}>
+          {% if not p %}{{ u.name[0] }}{% endif %}
+          <div class="on-photo">
+            <h3>{{ u.name }}</h3>
+            <p class="sub">{{ u.birth_year | age }}세{% if u.location %} · {{ u.location }}{% endif %}</p>
+          </div>
+        </div>
+        <div class="card-body">
+          {% if r.shared %}
+            <div class="shared">
+              {% for s in r.shared %}<span class="shared-chip">{{ s }}</span>{% endfor %}
+            </div>
+          {% endif %}
+          <div class="bars">
+            <div class="bar-row"><span>가치관</span><div class="bar"><i style="width:{{ r.match.values }}%"></i></div><b>{{ r.match.values }}%</b></div>
+            <div class="bar-row"><span>취향</span><div class="bar taste"><i style="width:{{ r.match.taste }}%"></i></div><b>{{ r.match.taste }}%</b></div>
+          </div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

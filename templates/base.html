@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}듀온 · 가치관으로 만나는 인연{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="logo" href="{{ url_for('index') }}">듀온<span>.</span></a>
+    <nav>
+      {% if me %}
+        <a href="{{ url_for('home') }}">추천</a>
+        <a href="{{ url_for('matches') }}">매칭</a>
+        <a href="{{ url_for('me_page') }}">내 프로필</a>
+        <a class="ghost" href="{{ url_for('logout') }}">로그아웃</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">로그인</a>
+        <a class="btn" href="{{ url_for('register') }}">시작하기</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, msg in messages %}
+        <div class="flash flash-{{ category }}">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">듀온 · {{ current_year }} · 가치관과 취향으로 만나는 진짜 인연</footer>
+</body>
+</html>

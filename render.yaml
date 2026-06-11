@@ -1,0 +1,14 @@
+# Render 배포 설정 (https://render.com)
+# GitHub 저장소 연결 후 자동으로 이 설정을 읽어 배포합니다.
+services:
+  - type: web
+    name: duon
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: "3.12.6"

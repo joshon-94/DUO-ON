@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+duon.db
+cloudflared.exe
+cj.txt
+cj2.txt
+.env
+static/photos/*
+!static/photos/.gitkeep

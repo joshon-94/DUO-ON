@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}추천 · 듀온{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h2>오늘의 추천</h2>
+  <p class="muted">가치관과 취향이 잘 맞는 순서로 보여드려요.</p>
+</div>
+
+{% if not results %}
+  <div class="empty">
+    <p>아직 추천할 상대가 없어요.</p>
+    <p class="muted">다른 회원이 가입하면 매칭률과 함께 여기에 나타나요.</p>
+  </div>
+{% else %}
+  <div class="card-grid">
+    {% for r in results %}
+      {% set u = r.user %}
+      <a class="match-card" href="{{ url_for('profile', user_id=u.id) }}">
+        <div class="match-badge">{{ r.match.score }}% 매칭</div>
+        {% set p = photo_for(u) %}
+        <div class="photo {{ 'g' ~ (u.id % 6) if not p }}"{% if p %} style="background-image:url('{{ p }}')"{% endif %}>
+          {% if not p %}{{ u.name[0] }}{% endif %}
+          <div class="on-photo">
+            <h3>{{ u.name }}</h3>
+            <p class="sub">{{ u.birth_year | age }}세{% if u.location %} · {{ u.location }}{% endif %}</p>
+          </div>
+        </div>
+        <div class="card-body">
+          {% if r.shared %}
+            <div class="shared">
+              {% for s in r.shared %}<span class="shared-chip">{{ s }}</span>{% endfor %}
+            </div>
+          {% endif %}
+          {% if u.bio %}<p class="bio">"{{ u.bio[:60] }}"</p>{% endif %}
+          <div class="bars">
+            <div class="bar-row"><span>가치관</span><div class="bar"><i style="width:{{ r.match.values }}%"></i></div><b>{{ r.match.values }}%</b></div>
+            <div class="bar-row"><span>취향</span><div class="bar taste"><i style="width:{{ r.match.taste }}%"></i></div><b>{{ r.match.taste }}%</b></div>
+          </div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

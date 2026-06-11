@@ -1,0 +1,24 @@
+<fieldset class="question">
+  <legend>{{ q.text }}</legend>
+  {% set saved = answers.get(q.id, '') %}
+  {% if q.type == 'multi' %}
+    {% set chosen = saved.split(',') %}
+    <div class="options chips">
+      {% for key, label in q.options %}
+        <label class="chip">
+          <input type="checkbox" name="{{ q.id }}" value="{{ key }}" {{ 'checked' if key in chosen }}>
+          <span>{{ label }}</span>
+        </label>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="options">
+      {% for key, label in q.options %}
+        <label class="option">
+          <input type="radio" name="{{ q.id }}" value="{{ key }}" {{ 'checked' if key == saved }}>
+          <span>{{ label }}</span>
+        </label>
+      {% endfor %}
+    </div>
+  {% endif %}
+</fieldset>

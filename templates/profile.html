@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ user.name }} · 듀온{% endblock %}
+{% block content %}
+<div class="profile">
+  {% set p = photo_for(user) %}
+  <div class="cover {{ 'g' ~ (user.id % 6) if not p }}"{% if p %} style="background-image:url('{{ p }}')"{% endif %}>
+    {% if not p %}<div class="cover-initial">{{ user.name[0] }}</div>{% endif %}
+    <div class="big-score">
+      <span class="num">{{ match.score }}%</span>
+      <span class="lbl">매칭률</span>
+    </div>
+    <div class="cover-info">
+      <h2>{{ user.name }}{% if is_match %} <span class="tag match">매칭됨 💛</span>{% endif %}</h2>
+      <p class="sub">{{ user.birth_year | age }}세{% if user.location %} · {{ user.location }}{% endif %}</p>
+    </div>
+  </div>
+
+  <div class="profile-inner">
+    {% if user.bio %}<p class="bio-box">"{{ user.bio }}"</p>{% endif %}
+
+    <div class="bars wide">
+      <div class="bar-row"><span>가치관</span><div class="bar"><i style="width:{{ match.values }}%"></i></div><b>{{ match.values }}%</b></div>
+      <div class="bar-row"><span>취향</span><div class="bar taste"><i style="width:{{ match.taste }}%"></i></div><b>{{ match.taste }}%</b></div>
+    </div>
+
+    <h3 class="section-title">가치관</h3>
+    <ul class="answer-list">
+      {% for a in grouped['values'] %}
+        <li class="{{ 'same' if a.same }}">
+          <span class="q">{{ a.text }}</span>
+          <span class="a">{{ a.display }}{% if a.same %} <em>· 나와 같아요</em>{% endif %}</span>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <h3 class="section-title">취향</h3>
+    <ul class="answer-list">
+      {% for a in grouped['taste'] %}
+        <li class="{{ 'same' if a.same }}">
+          <span class="q">{{ a.text }}</span>
+          <span class="a">{{ a.display }}{% if a.same %} <em>· 나와 같아요</em>{% endif %}</span>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <div class="profile-actions">
+      {% if already_liked %}
+        <button class="btn btn-lg" disabled>좋아요 보냄{% if is_match %} · 매칭!{% endif %}</button>
+      {% else %}
+        <form method="post" action="{{ url_for('like', user_id=user.id) }}">
+          <button class="btn btn-lg" type="submit">
+            {% if likes_me %}💛 좋아요 (이 분도 좋아했어요!){% else %}💛 좋아요 보내기{% endif %}
+          </button>
+        </form>
+      {% endif %}
+      <a class="btn ghost" href="{{ url_for('home') }}">목록으로</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

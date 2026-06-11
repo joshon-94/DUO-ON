@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero-split">
+  <div class="hero-text">
+    <span class="eyebrow">가치관·취향 기반 소개팅</span>
+    <h1>외모만 보는 소개팅은<br>이제 그만, <span class="accent">듀온</span></h1>
+    <p class="lead">
+      결혼관·자녀·라이프스타일 같은 <strong>가치관</strong>과
+      취미·여행·MBTI 같은 <strong>취향</strong>을 비교해
+      정말 잘 맞는 사람을 매칭률 %로 먼저 추천해 드려요.
+    </p>
+    <div class="hero-cta">
+      <a class="btn btn-lg" href="{{ url_for('register') }}">무료로 시작하기</a>
+      <a class="btn btn-lg ghost" href="{{ url_for('login') }}">로그인</a>
+    </div>
+    <p class="hero-note">설문은 1분이면 충분해요 · 언제든 수정 가능</p>
+  </div>
+
+  <div class="hero-visual">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="mock-card">
+      <div class="mock-badge">94% 매칭</div>
+      <div class="mock-photo g2">하</div>
+      <div class="mock-body">
+        <h3>하은 · 28세</h3>
+        <div class="shared">
+          <span class="shared-chip">결혼관</span>
+          <span class="shared-chip">독서</span>
+          <span class="shared-chip">영화</span>
+        </div>
+        <div class="bars">
+          <div class="bar-row"><span>가치관</span><div class="bar"><i style="width:100%"></i></div><b>100%</b></div>
+          <div class="bar-row"><span>취향</span><div class="bar taste"><i style="width:78%"></i></div><b>78%</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how">
+  <h2 class="how-title">이렇게 만나요</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>가입하고 설문</h3>
+      <p>가치관과 취향에 대한 짧은 질문에 답해요.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>매칭률로 추천</h3>
+      <p>나와 잘 맞는 사람을 매칭률 높은 순서로 보여드려요.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>좋아요 · 매칭</h3>
+      <p>마음에 들면 좋아요, 서로 좋아하면 매칭 성사!</p>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="feature-card">
+    <div class="emoji">💛</div>
+    <h3>가치관 매칭</h3>
+    <p>결혼관, 자녀 계획, 라이프스타일 등 진지한 기준으로 궁합을 계산해요.</p>
+  </div>
+  <div class="feature-card">
+    <div class="emoji">🎯</div>
+    <h3>취향 궁합</h3>
+    <p>취미·여행 스타일·MBTI까지 비교해 대화가 통하는 사람을 찾아드려요.</p>
+  </div>
+  <div class="feature-card">
+    <div class="emoji">🤝</div>
+    <h3>공통점 한눈에</h3>
+    <p>상대와 겹치는 가치관·취향을 카드에서 바로 확인할 수 있어요.</p>
+  </div>
+</section>
+{% endblock %}

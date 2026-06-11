@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}내 프로필 · 듀온{% endblock %}
+{% block content %}
+<div class="profile">
+  {% set p = photo_for(me) %}
+  <div class="cover {{ 'g' ~ (me.id % 6) if not p }}"{% if p %} style="background-image:url('{{ p }}')"{% endif %}>
+    {% if not p %}<div class="cover-initial">{{ me.name[0] }}</div>{% endif %}
+    <div class="cover-info">
+      <h2>{{ me.name }}</h2>
+      <p class="sub">{{ me.birth_year | age }}세{% if me.location %} · {{ me.location }}{% endif %} · {{ me.email }}</p>
+    </div>
+  </div>
+
+  <div class="profile-inner">
+    <form method="post" class="stack">
+      <label>자기소개
+        <textarea name="bio" rows="3" placeholder="나를 한 문장으로 소개해 보세요.">{{ me.bio }}</textarea>
+      </label>
+      <label>거주 지역
+        <input type="text" name="location" value="{{ me.location or '' }}" placeholder="예: 서울 강남구">
+      </label>
+      <div class="profile-actions">
+        <button class="btn" type="submit">저장</button>
+        <a class="btn ghost" href="{{ url_for('onboarding') }}">가치관·취향 설문 수정</a>
+      </div>
+    </form>
+
+    <h3 class="section-title">내 가치관</h3>
+    <ul class="answer-list">
+      {% for a in grouped['values'] %}
+        <li><span class="q">{{ a.text }}</span><span class="a">{{ a.display }}</span></li>
+      {% else %}
+        <li class="muted">아직 답하지 않았어요.</li>
+      {% endfor %}
+    </ul>
+
+    <h3 class="section-title">내 취향</h3>
+    <ul class="answer-list">
+      {% for a in grouped['taste'] %}
+        <li><span class="q">{{ a.text }}</span><span class="a">{{ a.display }}</span></li>
+      {% else %}
+        <li class="muted">아직 답하지 않았어요.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
