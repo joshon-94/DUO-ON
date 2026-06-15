@@ -6,7 +6,7 @@
   <h2>{{ '회원 정보 수정' if mode == 'edit' else '새 회원 추가' }}</h2>
   <p class="muted">기본 정보와 가치관·취향 설문을 입력하면 바로 추천에 노출돼요.</p>
 
-  <form method="post" class="survey">
+  <form method="post" class="survey" enctype="multipart/form-data">
     <h3 class="section-title">기본 정보</h3>
     <div class="stack">
       <label>이메일
@@ -32,8 +32,19 @@
       <label>거주 지역
         <input type="text" name="location" value="{{ form.location or '' }}" placeholder="예: 서울 강남구">
       </label>
-      <label>사진 URL
-        <input type="url" name="photo_url" value="{{ form.photo_url or '' }}" placeholder="https://...">
+      <label>사진
+        {% if form.photo_url %}
+          <img class="photo-preview" src="{{ form.photo_url }}" alt="현재 사진">
+        {% endif %}
+        {% if cloudinary_enabled %}
+          <input type="file" name="photo_file" accept="image/*">
+          <span class="hint">사진 파일을 선택하면 업로드돼요. {% if form.photo_url %}새로 고르지 않으면 기존 사진이 유지돼요.{% endif %}</span>
+        {% else %}
+          <span class="hint">파일 업로드 설정(CLOUDINARY_URL) 전이에요. 아래 URL 칸을 이용하세요.</span>
+        {% endif %}
+      </label>
+      <label>사진 URL (선택)
+        <input type="url" name="photo_url" value="{{ form.photo_url or '' }}" placeholder="https://... (직접 링크 입력 시)">
       </label>
       <label>소개글
         <textarea name="bio" rows="3" placeholder="간단한 자기소개">{{ form.bio or '' }}</textarea>

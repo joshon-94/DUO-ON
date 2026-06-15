@@ -12,6 +12,9 @@ from flask import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 
+import cloudinary
+import cloudinary.uploader
+
 from models import db, User, Like
 from questions import (
     QUESTIONS, match_score, option_label, shared_highlights
@@ -33,6 +36,11 @@ CURRENT_YEAR = datetime.date.today().year
 # 관리자 계정 정보 (배포 시 환경변수로 지정)
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@duon.com").strip().lower()
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin1234")
+
+# 사진 업로드: CLOUDINARY_URL 환경변수가 있으면 파일 업로드 활성화
+CLOUDINARY_ENABLED = bool(os.environ.get("CLOUDINARY_URL"))
+if CLOUDINARY_ENABLED:
+    cloudinary.config(secure=True)  # CLOUDINARY_URL을 자동으로 읽음
 
 
 def ensure_admin():
@@ -105,7 +113,7 @@ def photo_for(user):
 @app.context_processor
 def inject_globals():
     return {"me": current_user(), "current_year": CURRENT_YEAR,
-            "photo_for": photo_for}
+            "photo_for": photo_for, "cloudinary_enabled": CLOUDINARY_ENABLED}
 
 
 @app.template_filter("age")
@@ -345,7 +353,7 @@ def admin_list():
 @admin_required
 def admin_new():
     if request.method == "POST":
-        result = _save_member(None, request.form)
+        result = _save_member(None, request.form, request.files)
         if result is True:
             flash("회원이 추가됐어요.", "success")
             return redirect(url_for("admin_list"))
@@ -367,7 +375,7 @@ def admin_edit(user_id):
     if not user or user.is_admin:
         abort(404)
     if request.method == "POST":
-        result = _save_member(user, request.form)
+        result = _save_member(user, request.form, request.files)
         if result is True:
             flash("회원 정보가 수정됐어요.", "success")
             return redirect(url_for("admin_list"))
@@ -405,7 +413,7 @@ def _user_to_form(user):
     }
 
 
-def _save_member(user, form):
+def _save_member(user, form, files=None):
     """관리자 폼으로 회원 생성/수정. 성공 시 True, 실패 시 False(플래시 설정)."""
     email = form.get("email", "").strip().lower()
     name = form.get("name", "").strip()
@@ -426,6 +434,20 @@ def _save_member(user, form):
         flash("이미 사용 중인 이메일이에요.", "error")
         return False
 
+    # 사진: 파일 업로드(Cloudinary) 우선, 없으면 URL 입력값 사용
+    photo_url = form.get("photo_url", "").strip()
+    photo_file = files.get("photo_file") if files else None
+    if photo_file and photo_file.filename:
+        if not CLOUDINARY_ENABLED:
+            flash("사진 업로드 설정이 아직 없어요. 우선 사진 URL을 입력해 주세요.", "error")
+            return False
+        try:
+            result = cloudinary.uploader.upload(photo_file, folder="duon")
+            photo_url = result["secure_url"]
+        except Exception as exc:
+            flash("사진 업로드에 실패했어요: %s" % exc, "error")
+            return False
+
     if user is None:
         user = User(email=email, password_hash=generate_password_hash(password))
         db.session.add(user)
@@ -439,7 +461,7 @@ def _save_member(user, form):
     user.birth_year = int(birth_year)
     user.location = form.get("location", "").strip()
     user.bio = form.get("bio", "").strip()
-    user.photo_url = form.get("photo_url", "").strip()
+    user.photo_url = photo_url
     user.set_answers(collect_answers_from_form(form))
     user.onboarded = True  # 관리자가 넣은 회원은 추천에 바로 노출
     db.session.commit()
