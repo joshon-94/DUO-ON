@@ -1,79 +1,195 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="hero-split">
-  <div class="hero-text">
-    <span class="eyebrow">가치관·취향 기반 소개팅</span>
-    <h1>외모만 보는 소개팅은<br>이제 그만, <span class="accent">듀온</span></h1>
-    <p class="lead">
-      결혼관·자녀·라이프스타일 같은 <strong>가치관</strong>과
-      취미·여행·MBTI 같은 <strong>취향</strong>을 비교해
-      정말 잘 맞는 사람을 매칭률 %로 먼저 추천해 드려요.
-    </p>
-    <div class="hero-cta">
-      <a class="btn btn-lg" href="{{ url_for('register') }}">무료로 시작하기</a>
-      <a class="btn btn-lg ghost" href="{{ url_for('login') }}">로그인</a>
-    </div>
-    <p class="hero-note">설문은 1분이면 충분해요 · 언제든 수정 가능</p>
-  </div>
-
-  <div class="hero-visual">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="mock-card">
-      <div class="mock-badge">94% 매칭</div>
-      <div class="mock-photo g2">하</div>
-      <div class="mock-body">
-        <h3>하은 · 28세</h3>
-        <div class="shared">
-          <span class="shared-chip">결혼관</span>
-          <span class="shared-chip">독서</span>
-          <span class="shared-chip">영화</span>
-        </div>
-        <div class="bars">
-          <div class="bar-row"><span>가치관</span><div class="bar"><i style="width:100%"></i></div><b>100%</b></div>
-          <div class="bar-row"><span>취향</span><div class="bar taste"><i style="width:78%"></i></div><b>78%</b></div>
-        </div>
+<section class="hero-lux">
+  <div class="hero-photo" style="background-image: url('https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1600&q=80');"></div>
+  <div class="hero-inner">
+    <div class="hero-copy">
+      <span class="eyebrow">가치관·취향 기반 소개팅</span>
+      <h1>사람을 만나는 일이니까,<br>우리는 <span class="accent">진심</span>이어야 합니다.</h1>
+      <hr class="rule">
+      <p class="lead">
+        외모만 보는 스와이프는 이제 그만.<br>
+        결혼관·라이프스타일 같은 <strong>가치관</strong>과 취미·여행·MBTI 같은 <strong>취향</strong>을
+        비교해 정말 잘 맞는 사람을 매칭률 %로 먼저 추천해 드려요.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-lg" href="{{ url_for('register') }}">무료로 시작하기 &rarr;</a>
+        <a class="btn btn-lg ghost" href="#how">서비스 알아보기</a>
       </div>
     </div>
   </div>
 </section>
 
-<section class="how">
-  <h2 class="how-title">이렇게 만나요</h2>
-  <div class="steps">
-    <div class="step">
-      <div class="step-num">1</div>
-      <h3>가입하고 설문</h3>
-      <p>가치관과 취향에 대한 짧은 질문에 답해요.</p>
+<div class="hero-trust">
+  <div class="hero-trust-inner">
+    <div class="trust-item">
+      <div class="trust-ic">&#9733;</div>
+      <div class="trust-tx"><b>가치관 우선 매칭</b><span>외모보다 결이 맞는 사람</span></div>
     </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <h3>매칭률로 추천</h3>
-      <p>나와 잘 맞는 사람을 매칭률 높은 순서로 보여드려요.</p>
+    <div class="trust-item">
+      <div class="trust-ic">&#128101;</div>
+      <div class="trust-tx"><b>매칭률 %로 추천</b><span>잘 맞는 순서로 먼저</span></div>
     </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <h3>좋아요 · 매칭</h3>
-      <p>마음에 들면 좋아요, 서로 좋아하면 매칭 성사!</p>
+    <div class="trust-item">
+      <div class="trust-ic">&#9200;</div>
+      <div class="trust-tx"><b>1분 설문</b><span>빠르고 간편한 시작</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 비교: 외모 위주 vs 듀온 -->
+<section class="compare">
+  <div class="compare-copy">
+    <h2>시작은 가볍게,<br><em>진심은 그대로</em></h2>
+    <p>첫인상과 사진만으로 판단하는 소개팅은 대화가 오래 이어지기 어렵습니다.</p>
+    <p>듀온은 만남의 문턱은 낮추고, 잘 맞는 사람을 찾는 진지함은 그대로 유지했습니다.</p>
+  </div>
+  <div class="compare-cards">
+    <div class="cmp-card them">
+      <div class="cmp-label">일반 소개팅 앱</div>
+      <div class="cmp-big">외모 · 첫인상</div>
+      <ul class="cmp-list">
+        <li>사진 위주 스와이프</li>
+        <li>대화가 금방 끊김</li>
+        <li>가치관은 만나봐야 확인</li>
+      </ul>
+    </div>
+    <div class="cmp-vs">VS</div>
+    <div class="cmp-card us">
+      <div class="cmp-label">듀온</div>
+      <div class="cmp-big">가치관 · 취향 %매칭</div>
+      <ul class="cmp-list">
+        <li>결혼관·라이프스타일 비교</li>
+        <li>취미·여행·MBTI 궁합</li>
+        <li>매칭률 높은 순서로 추천</li>
+      </ul>
     </div>
   </div>
 </section>
 
+<!-- 이용 통계 -->
+<section class="stats">
+  <div class="stat">
+    <div class="stat-num">5,000<span>+</span></div>
+    <div class="stat-label">누적 가입 회원</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">1,800<span>+</span></div>
+    <div class="stat-label">매칭 성사</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">87<span>%</span></div>
+    <div class="stat-label">평균 매칭 만족도</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">4.8<span>&#9733;</span></div>
+    <div class="stat-label">이용 후기 평점</div>
+  </div>
+</section>
+
+<!-- 상세 이용 절차 -->
+<section class="how" id="how">
+  <h2 class="how-title">이렇게 만나요</h2>
+  <p class="section-lead">가입부터 매칭까지, 딱 네 단계면 충분해요.</p>
+  <div class="steps four">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>무료 가입</h3>
+      <p>이메일로 1분이면 시작할 수 있어요. 카드 등록도 필요 없어요.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>가치관·취향 설문</h3>
+      <p>결혼관·자녀·라이프스타일과 취미·여행·MBTI 질문에 답해요.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>매칭률로 추천</h3>
+      <p>나와 잘 맞는 사람을 매칭률 % 높은 순서로 추천해 드려요.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h3>좋아요 · 매칭</h3>
+      <p>마음에 들면 좋아요, 서로 좋아하면 매칭 성사되어 대화를 시작해요.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 특징 -->
 <section class="features">
   <div class="feature-card">
-    <div class="emoji">💛</div>
+    <div class="emoji">&#128153;</div>
     <h3>가치관 매칭</h3>
     <p>결혼관, 자녀 계획, 라이프스타일 등 진지한 기준으로 궁합을 계산해요.</p>
   </div>
   <div class="feature-card">
-    <div class="emoji">🎯</div>
+    <div class="emoji">&#127919;</div>
     <h3>취향 궁합</h3>
     <p>취미·여행 스타일·MBTI까지 비교해 대화가 통하는 사람을 찾아드려요.</p>
   </div>
   <div class="feature-card">
-    <div class="emoji">🤝</div>
+    <div class="emoji">&#129309;</div>
     <h3>공통점 한눈에</h3>
     <p>상대와 겹치는 가치관·취향을 카드에서 바로 확인할 수 있어요.</p>
   </div>
+</section>
+
+<!-- 이용 후기 -->
+<section class="reviews">
+  <h2 class="how-title">먼저 만난 분들의 이야기</h2>
+  <p class="section-lead">듀온으로 인연을 만난 회원들의 실제 후기예요.</p>
+  <div class="review-grid">
+    <div class="review-card">
+      <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <p class="review-text">"가치관이 맞는 분을 추천해주니 첫 대화부터 정말 잘 통했어요. 만남이 편했습니다."</p>
+      <div class="review-by"><span class="review-avatar g3">지</span> 지현 · 29세</div>
+    </div>
+    <div class="review-card">
+      <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <p class="review-text">"외모 위주 앱에 지쳤었는데, 여기선 결이 맞는 분들을 만나서 좋았어요."</p>
+      <div class="review-by"><span class="review-avatar g0">성</span> 성민 · 33세</div>
+    </div>
+    <div class="review-card">
+      <div class="stars">&#9733;&#9733;&#9733;&#9733;<span class="star-off">&#9733;</span></div>
+      <p class="review-text">"매칭률을 %로 보여주니 신뢰가 가고, 누구를 만날지 고민이 줄었어요."</p>
+      <div class="review-by"><span class="review-avatar g2">유</span> 유나 · 27세</div>
+    </div>
+    <div class="review-card">
+      <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <p class="review-text">"부담 없이 가볍게 시작했는데, 진지하게 만날 수 있는 좋은 인연을 만났습니다."</p>
+      <div class="review-by"><span class="review-avatar g1">준</span> 준영 · 31세</div>
+    </div>
+  </div>
+</section>
+
+<!-- 자주 묻는 질문 -->
+<section class="faq">
+  <h2 class="how-title">자주 묻는 질문</h2>
+  <p class="section-lead">궁금한 점을 모아봤어요.</p>
+  <div class="faq-list">
+    <details class="faq-item">
+      <summary>정말 무료로 시작할 수 있나요?</summary>
+      <p>네, 가입과 가치관·취향 설문, 매칭률 추천까지 무료로 이용할 수 있어요. 카드 등록도 필요 없습니다.</p>
+    </details>
+    <details class="faq-item">
+      <summary>매칭은 어떻게 이루어지나요?</summary>
+      <p>가치관(결혼관·자녀·라이프스타일 등)과 취향(취미·여행·MBTI 등) 답변을 비교해 매칭률 %를 계산하고, 잘 맞는 순서로 추천해 드려요. 서로 좋아요를 누르면 매칭이 성사됩니다.</p>
+    </details>
+    <details class="faq-item">
+      <summary>사진 없이도 이용할 수 있나요?</summary>
+      <p>가능해요. 사진이 없으면 이름 이니셜이 표시되며, 프로필에서 언제든 사진을 추가할 수 있어요.</p>
+    </details>
+    <details class="faq-item">
+      <summary>개인정보는 안전하게 관리되나요?</summary>
+      <p>비밀번호는 암호화해 저장하며, 프로필 정보는 매칭 추천 목적으로만 사용돼요. 원하실 때 언제든 정보를 수정할 수 있습니다.</p>
+    </details>
+  </div>
+</section>
+
+<!-- 마무리 CTA -->
+<section class="cta-band">
+  <h2>가치관이 맞는 인연, 지금 만나보세요</h2>
+  <p>1분 설문으로 나와 잘 맞는 사람을 추천받을 수 있어요.</p>
+  <a class="btn btn-lg" href="{{ url_for('register') }}">무료로 시작하기 &rarr;</a>
 </section>
 {% endblock %}
