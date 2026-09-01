@@ -20,7 +20,23 @@
   <section class="auth-form">
     <h2>듀온 시작하기</h2>
     <p class="muted">가입 후 바로 가치관·취향 설문이 이어져요.</p>
-    <form method="post" class="stack">
+    <form method="post" class="stack" enctype="multipart/form-data">
+      <div class="photo-upload">
+        <div class="photo-preview" id="photoPreview">
+          <span>사진<br>미리보기</span>
+        </div>
+        <div class="photo-upload-fields">
+          {% if cloudinary_enabled %}
+          <label>프로필 사진 (선택)
+            <input type="file" name="photo_file" accept="image/*" id="photoFile">
+          </label>
+          <p class="muted small">또는 이미지 주소를 붙여넣어도 돼요.</p>
+          {% endif %}
+          <label>사진 URL (선택)
+            <input type="url" name="photo_url" value="{{ form.photo_url or '' }}" placeholder="https://…/photo.jpg" id="photoUrl">
+          </label>
+        </div>
+      </div>
       <label>이메일
         <input type="email" name="email" value="{{ form.email or '' }}" placeholder="you@example.com" required>
       </label>
@@ -47,4 +63,26 @@
     <p class="muted center">이미 계정이 있나요? <a href="{{ url_for('login') }}">로그인</a></p>
   </section>
 </div>
+<script>
+(function () {
+  var preview = document.getElementById('photoPreview');
+  var fileInput = document.getElementById('photoFile');
+  var urlInput = document.getElementById('photoUrl');
+  function show(src) {
+    if (!src) { preview.style.backgroundImage = ''; preview.classList.remove('has-photo'); return; }
+    preview.style.backgroundImage = 'url("' + src + '")';
+    preview.classList.add('has-photo');
+  }
+  if (fileInput) {
+    fileInput.addEventListener('change', function () {
+      var file = fileInput.files && fileInput.files[0];
+      if (file) { show(URL.createObjectURL(file)); if (urlInput) urlInput.value = ''; }
+    });
+  }
+  if (urlInput) {
+    urlInput.addEventListener('input', function () { show(urlInput.value.trim()); });
+    if (urlInput.value.trim()) show(urlInput.value.trim());
+  }
+})();
+</script>
 {% endblock %}

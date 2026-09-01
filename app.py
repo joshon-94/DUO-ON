@@ -183,10 +183,24 @@ def register():
             flash("이미 가입된 이메일이에요.", "error")
             return render_template("register.html", form=f)
 
+        # 사진: 파일 업로드(Cloudinary) 우선, 없으면 URL 입력값 사용
+        photo_url = f.get("photo_url", "").strip()
+        photo_file = request.files.get("photo_file")
+        if photo_file and photo_file.filename:
+            if not CLOUDINARY_ENABLED:
+                flash("사진 파일 업로드 설정이 아직 없어요. 사진 URL을 입력하거나 나중에 프로필에서 추가해 주세요.", "error")
+                return render_template("register.html", form=f)
+            try:
+                result = cloudinary.uploader.upload(photo_file, folder="duon")
+                photo_url = result["secure_url"]
+            except Exception as exc:
+                flash("사진 업로드에 실패했어요: %s" % exc, "error")
+                return render_template("register.html", form=f)
+
         user = User(
             email=email, password_hash=generate_password_hash(password),
             name=name, gender=gender, birth_year=int(birth_year),
-            location=location,
+            location=location, photo_url=photo_url,
         )
         db.session.add(user)
         db.session.commit()
