@@ -175,6 +175,44 @@ a.ghost { color: var(--muted); font-weight: 600; }
 .trust-tx b { display: block; color: #fff; font-size: 15px; font-weight: 700; }
 .trust-tx span { color: rgba(255,255,255,0.55); font-size: 13px; }
 
+/* ===== 브랜드 스토리 ===== */
+.brand-story {
+  margin: 96px 0 10px;
+  display: grid; grid-template-columns: 0.82fr 1.18fr; gap: 56px; align-items: center;
+}
+.brand-photo {
+  position: relative; border-radius: var(--radius); overflow: hidden;
+  aspect-ratio: 4 / 5; background: var(--cream-2);
+  box-shadow: var(--shadow-lg); border: 1px solid var(--gold-line);
+}
+.brand-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.brand-photo.no-photo { display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(160deg, #201b15, #2c251d); }
+.brand-photo.no-photo img { display: none; }
+.brand-photo.no-photo::before {
+  content: "溫"; font-size: 128px; font-weight: 800; color: var(--gold);
+  opacity: 0.9; line-height: 1;
+}
+.brand-caption {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+  padding: 24px 20px 16px; font-size: 14px; font-weight: 600; color: #fff;
+  background: linear-gradient(to top, rgba(20,16,12,0.75), transparent);
+}
+.brand-copy .eyebrow {
+  display: inline-block; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--gold-dark); font-weight: 700; margin-bottom: 14px;
+}
+.brand-copy h2 { font-size: 30px; font-weight: 800; margin: 0 0 20px; letter-spacing: -0.01em; }
+.brand-copy h2 .accent { color: var(--gold-dark); }
+.brand-copy p { color: var(--ink-2); font-size: 16px; margin: 0 0 14px; }
+.brand-copy .brand-lead { font-size: 18px; color: var(--ink); }
+.brand-copy strong { color: var(--ink); font-weight: 700; }
+.brand-copy em { font-style: normal; color: var(--gold-dark); font-weight: 600; }
+@media (max-width: 900px) {
+  .brand-story { grid-template-columns: 1fr; gap: 28px; margin: 64px 0 10px; }
+  .brand-photo { max-width: 360px; margin: 0 auto; }
+}
+
 /* ===== 비교 섹션 ===== */
 .compare { margin: 96px 0 10px; display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 48px; align-items: center; }
 .compare-copy h2 { font-size: 30px; font-weight: 800; margin: 0 0 16px; }

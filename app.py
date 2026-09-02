@@ -70,8 +70,18 @@ def ensure_seed():
             print("seed skipped:", exc)
 
 
+def ensure_columns():
+    """기존 DB(users 테이블)에 새 컬럼이 없으면 추가 (SQLite/PostgreSQL 공통)."""
+    from sqlalchemy import inspect, text
+    cols = {c["name"] for c in inspect(db.engine).get_columns("users")}
+    if "photos_json" not in cols:
+        with db.engine.begin() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN photos_json TEXT DEFAULT '[]'"))
+
+
 with app.app_context():
     db.create_all()
+    ensure_columns()
     ensure_admin()
     ensure_seed()
 
@@ -108,6 +118,45 @@ def photo_for(user):
     if user is None:
         return None
     return user.photo_url or None
+
+
+def collect_photos(form, files):
+    """폼에서 사진 URL/파일을 모두 모아 URL 리스트로 반환.
+
+    반환: (photos, error_message). error가 있으면 photos는 None.
+    - photo_urls[]: 여러 URL 입력
+    - photo_url: 단일 URL(구 폼/관리자 호환)
+    - photo_files[]: 여러 파일 업로드 (Cloudinary)
+    - photo_file: 단일 파일(구 폼/관리자 호환)
+    """
+    urls = [u.strip() for u in form.getlist("photo_urls") if u.strip()]
+    single = form.get("photo_url", "").strip()
+    if single:
+        urls.append(single)
+
+    file_list = list(files.getlist("photo_files")) if files else []
+    single_file = files.get("photo_file") if files else None
+    if single_file and single_file.filename:
+        file_list.append(single_file)
+
+    uploaded = []
+    for f in file_list:
+        if not (f and f.filename):
+            continue
+        if not CLOUDINARY_ENABLED:
+            return None, "사진 파일 업로드 설정이 아직 없어요. 사진 URL을 입력하거나 나중에 프로필에서 추가해 주세요."
+        try:
+            res = cloudinary.uploader.upload(f, folder="duon")
+            uploaded.append(res["secure_url"])
+        except Exception as exc:
+            return None, "사진 업로드에 실패했어요: %s" % exc
+
+    seen, result = set(), []
+    for p in uploaded + urls:
+        if p not in seen:
+            seen.add(p)
+            result.append(p)
+    return result, None
 
 
 @app.context_processor
@@ -183,25 +232,18 @@ def register():
             flash("이미 가입된 이메일이에요.", "error")
             return render_template("register.html", form=f)
 
-        # 사진: 파일 업로드(Cloudinary) 우선, 없으면 URL 입력값 사용
-        photo_url = f.get("photo_url", "").strip()
-        photo_file = request.files.get("photo_file")
-        if photo_file and photo_file.filename:
-            if not CLOUDINARY_ENABLED:
-                flash("사진 파일 업로드 설정이 아직 없어요. 사진 URL을 입력하거나 나중에 프로필에서 추가해 주세요.", "error")
-                return render_template("register.html", form=f)
-            try:
-                result = cloudinary.uploader.upload(photo_file, folder="duon")
-                photo_url = result["secure_url"]
-            except Exception as exc:
-                flash("사진 업로드에 실패했어요: %s" % exc, "error")
-                return render_template("register.html", form=f)
+        # 사진 여러 장: 파일 업로드(Cloudinary) + URL 입력
+        photos, err = collect_photos(f, request.files)
+        if err:
+            flash(err, "error")
+            return render_template("register.html", form=f)
 
         user = User(
             email=email, password_hash=generate_password_hash(password),
             name=name, gender=gender, birth_year=int(birth_year),
-            location=location, photo_url=photo_url,
+            location=location,
         )
+        user.set_photos(photos)
         db.session.add(user)
         db.session.commit()
         session["user_id"] = user.id
@@ -348,6 +390,16 @@ def me_page():
     if request.method == "POST":
         me.bio = request.form.get("bio", "").strip()
         me.location = request.form.get("location", "").strip()
+
+        # 사진: 기존 목록에서 삭제할 것 제외 + 새로 추가한 것 합치기
+        remove = set(request.form.getlist("remove_photos"))
+        kept = [p for p in me.get_photos() if p not in remove]
+        new_photos, err = collect_photos(request.form, request.files)
+        if err:
+            flash(err, "error")
+            return redirect(url_for("me_page"))
+        me.set_photos(kept + new_photos)
+
         db.session.commit()
         flash("프로필이 저장됐어요.", "success")
         return redirect(url_for("me_page"))

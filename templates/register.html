@@ -22,19 +22,21 @@
     <p class="muted">가입 후 바로 가치관·취향 설문이 이어져요.</p>
     <form method="post" class="stack" enctype="multipart/form-data">
       <div class="photo-upload">
-        <div class="photo-preview" id="photoPreview">
-          <span>사진<br>미리보기</span>
+        <div class="photo-gallery" id="photoGallery">
+          <span class="photo-empty">사진 미리보기<br>(여러 장 가능)</span>
         </div>
         <div class="photo-upload-fields">
           {% if cloudinary_enabled %}
-          <label>프로필 사진 (선택)
-            <input type="file" name="photo_file" accept="image/*" id="photoFile">
+          <label>프로필 사진 (여러 장 선택 가능)
+            <input type="file" name="photo_files" accept="image/*" multiple id="photoFiles">
           </label>
-          <p class="muted small">또는 이미지 주소를 붙여넣어도 돼요.</p>
+          <p class="muted small">또는 아래에 이미지 주소를 붙여넣어도 돼요.</p>
           {% endif %}
-          <label>사진 URL (선택)
-            <input type="url" name="photo_url" value="{{ form.photo_url or '' }}" placeholder="https://…/photo.jpg" id="photoUrl">
+          <label>사진 URL (선택 · 여러 개 가능)
+            <input type="url" name="photo_urls" placeholder="https://…/photo1.jpg" class="photo-url-input">
           </label>
+          <input type="url" name="photo_urls" placeholder="https://…/photo2.jpg" class="photo-url-input">
+          <input type="url" name="photo_urls" placeholder="https://…/photo3.jpg" class="photo-url-input">
         </div>
       </div>
       <label>이메일
@@ -65,24 +67,33 @@
 </div>
 <script>
 (function () {
-  var preview = document.getElementById('photoPreview');
-  var fileInput = document.getElementById('photoFile');
-  var urlInput = document.getElementById('photoUrl');
-  function show(src) {
-    if (!src) { preview.style.backgroundImage = ''; preview.classList.remove('has-photo'); return; }
-    preview.style.backgroundImage = 'url("' + src + '")';
-    preview.classList.add('has-photo');
-  }
-  if (fileInput) {
-    fileInput.addEventListener('change', function () {
-      var file = fileInput.files && fileInput.files[0];
-      if (file) { show(URL.createObjectURL(file)); if (urlInput) urlInput.value = ''; }
+  var gallery = document.getElementById('photoGallery');
+  var fileInput = document.getElementById('photoFiles');
+  var urlInputs = document.querySelectorAll('.photo-url-input');
+  function render() {
+    var srcs = [];
+    if (fileInput && fileInput.files) {
+      for (var i = 0; i < fileInput.files.length; i++) srcs.push(URL.createObjectURL(fileInput.files[i]));
+    }
+    urlInputs.forEach(function (inp) { var v = inp.value.trim(); if (v) srcs.push(v); });
+    gallery.innerHTML = '';
+    if (!srcs.length) {
+      var empty = document.createElement('span');
+      empty.className = 'photo-empty';
+      empty.innerHTML = '사진 미리보기<br>(여러 장 가능)';
+      gallery.appendChild(empty);
+      return;
+    }
+    srcs.forEach(function (src, idx) {
+      var thumb = document.createElement('div');
+      thumb.className = 'photo-thumb';
+      thumb.style.backgroundImage = 'url("' + src + '")';
+      if (idx === 0) { var badge = document.createElement('span'); badge.className = 'thumb-badge'; badge.textContent = '대표'; thumb.appendChild(badge); }
+      gallery.appendChild(thumb);
     });
   }
-  if (urlInput) {
-    urlInput.addEventListener('input', function () { show(urlInput.value.trim()); });
-    if (urlInput.value.trim()) show(urlInput.value.trim());
-  }
+  if (fileInput) fileInput.addEventListener('change', render);
+  urlInputs.forEach(function (inp) { inp.addEventListener('input', render); });
 })();
 </script>
 {% endblock %}

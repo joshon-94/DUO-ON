@@ -16,6 +16,15 @@
   </div>
 
   <div class="profile-inner">
+    {% set photos = user.get_photos() %}
+    {% if photos|length > 1 %}
+    <div class="photo-strip">
+      {% for url in photos %}
+      <div class="photo-strip-img" style="background-image:url('{{ url }}')"></div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
     {% if user.bio %}<p class="bio-box">"{{ user.bio }}"</p>{% endif %}
 
     <div class="bars wide">

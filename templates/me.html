@@ -12,7 +12,36 @@
   </div>
 
   <div class="profile-inner">
-    <form method="post" class="stack">
+    <form method="post" class="stack" enctype="multipart/form-data">
+      <h3 class="section-title">내 사진</h3>
+      {% set photos = me.get_photos() %}
+      {% if photos %}
+      <div class="my-photos">
+        {% for url in photos %}
+        <div class="my-photo">
+          <div class="my-photo-img" style="background-image:url('{{ url }}')">
+            {% if loop.first %}<span class="thumb-badge">대표</span>{% endif %}
+          </div>
+          <label class="my-photo-del"><input type="checkbox" name="remove_photos" value="{{ url }}"> 삭제</label>
+        </div>
+        {% endfor %}
+      </div>
+      <p class="muted small">첫 번째 사진이 대표로 표시돼요. 삭제할 사진을 체크하고 저장하세요.</p>
+      {% else %}
+      <p class="muted">아직 등록한 사진이 없어요. 아래에서 추가해 보세요.</p>
+      {% endif %}
+
+      {% if cloudinary_enabled %}
+      <label>사진 추가 (여러 장 선택 가능)
+        <input type="file" name="photo_files" accept="image/*" multiple>
+      </label>
+      <p class="muted small">또는 이미지 주소로 추가할 수 있어요.</p>
+      {% endif %}
+      <label>사진 URL로 추가 (선택)
+        <input type="url" name="photo_urls" placeholder="https://…/photo.jpg">
+      </label>
+      <input type="url" name="photo_urls" placeholder="https://…/다른사진.jpg">
+
       <label>자기소개
         <textarea name="bio" rows="3" placeholder="나를 한 문장으로 소개해 보세요.">{{ me.bio }}</textarea>
       </label>
