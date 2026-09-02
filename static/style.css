@@ -208,6 +208,17 @@ a.ghost { color: var(--muted); font-weight: 600; }
 .brand-copy .brand-lead { font-size: 18px; color: var(--ink); }
 .brand-copy strong { color: var(--ink); font-weight: 700; }
 .brand-copy em { font-style: normal; color: var(--gold-dark); font-weight: 600; }
+.brand-free {
+  margin-top: 24px; padding: 22px 24px; border-radius: var(--radius);
+  background: var(--gold-soft); border: 1px solid var(--gold-line);
+}
+.brand-free-badge {
+  display: inline-block; margin-bottom: 12px; padding: 5px 14px; border-radius: 999px;
+  background: var(--grad); color: #fff; font-size: 13px; font-weight: 800; letter-spacing: 0.02em;
+}
+.brand-free p { margin: 0 0 8px; }
+.brand-free p:last-child { margin-bottom: 0; }
+.brand-free-wink { color: var(--ink-2); font-size: 15px; }
 @media (max-width: 900px) {
   .brand-story { grid-template-columns: 1fr; gap: 28px; margin: 64px 0 10px; }
   .brand-photo { max-width: 360px; margin: 0 auto; }
