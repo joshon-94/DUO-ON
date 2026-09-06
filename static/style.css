@@ -254,6 +254,24 @@ a.ghost { color: var(--muted); font-weight: 500; }
 }
 .step h3 { margin: 0 0 8px; font-size: 18px; font-weight: 600; }
 .step p { color: var(--ink-2); font-size: 15px; margin: 0; line-height: 1.7; }
+.step .step-num { transition: color .25s ease, letter-spacing .25s ease; }
+.step:hover .step-num { color: var(--gold); letter-spacing: 0.04em; }
+
+/* 스크롤 등장 애니메이션 (JS가 .will-reveal 부여) */
+.step.will-reveal {
+  opacity: 0; transform: translateY(22px);
+  transition: opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1);
+}
+.step.will-reveal.reveal { opacity: 1; transform: none; }
+.step.will-reveal .step-num { position: relative; }
+.step.will-reveal.reveal .step-num::after {
+  content: ""; position: absolute; left: 2px; bottom: -6px; height: 2px; width: 0;
+  background: var(--gold); animation: numline .6s .35s ease forwards;
+}
+@keyframes numline { to { width: 26px; } }
+@media (prefers-reduced-motion: reduce) {
+  .step.will-reveal { opacity: 1; transform: none; transition: none; }
+}
 
 .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 56px; }
 .feature-card {

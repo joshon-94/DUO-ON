@@ -86,8 +86,8 @@
     </div>
     <div class="step">
       <div class="step-num">03</div>
-      <h3>매칭률로 추천</h3>
-      <p>나와 잘 맞는 사람을 매칭률 % 높은 순서로 추천해 드려요.</p>
+      <h3>매니저 직접 추천</h3>
+      <p>온기철 듀온 대표이자 매니저가 직접 회원님께 잘 맞는 상대를 추천하고, 상대방 정보를 전달해 드리는 과정이에요.</p>
     </div>
     <div class="step">
       <div class="step-num">04</div>
@@ -103,4 +103,22 @@
   <p>1분 설문으로 나와 잘 맞는 사람을 추천받을 수 있어요.</p>
   <a class="btn btn-lg" href="{{ url_for('register') }}">무료로 시작하기 &rarr;</a>
 </section>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var items = document.querySelectorAll('.step');
+  if (reduce || !('IntersectionObserver' in window) || !items.length) return;
+  items.forEach(function (el, i) {
+    el.classList.add('will-reveal');
+    el.style.transitionDelay = (i * 0.12) + 's';
+  });
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { e.target.classList.add('reveal'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.2 });
+  items.forEach(function (el) { io.observe(el); });
+})();
+</script>
 {% endblock %}
