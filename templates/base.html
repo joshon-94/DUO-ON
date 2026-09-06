@@ -7,11 +7,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <header class="topbar">
-    <a class="logo" href="{{ url_for('index') }}">듀온<span>.</span></a>
+    <a class="logo" href="{{ url_for('index') }}" aria-label="듀온 Duon">
+      <span>Du</span><svg class="logo-o" viewBox="0 0 46 30" aria-hidden="true"><circle cx="17" cy="15" r="11" fill="none" stroke="#d96a94" stroke-width="2.6"/><circle cx="29" cy="15" r="11" fill="none" stroke="#efaac2" stroke-width="2.6"/></svg><span>n</span>
+    </a>
     <nav>
       {% if me and me.is_admin %}
         <a href="{{ url_for('admin_list') }}">회원 관리</a>
