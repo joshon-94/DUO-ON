@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" role="img" aria-label="듀온 Duon">
+  <style>
+    .wm { font-family: "Cormorant Garamond", "Noto Serif KR", Georgia, serif; font-weight: 600; font-size: 92px; letter-spacing: 0.02em; }
+  </style>
+  <!-- Du -->
+  <text class="wm" x="14" y="94" fill="#d96a94">Du</text>
+  <!-- twin-ring o -->
+  <g transform="translate(150, 40)">
+    <circle cx="24" cy="24" r="21" fill="none" stroke="#d96a94" stroke-width="5"/>
+    <circle cx="48" cy="24" r="21" fill="none" stroke="#efaac2" stroke-width="5"/>
+  </g>
+  <!-- n -->
+  <text class="wm" x="228" y="94" fill="#d96a94">n</text>
+</svg>

@@ -664,3 +664,21 @@ input:focus, textarea:focus { outline: none; border-color: var(--gold); }
   .stat-num { font-size: 34px; }
   .cta-band h2 { font-size: 26px; }
 }
+
+/* ===== 가입 후 대기 화면 ===== */
+.waiting { display: flex; justify-content: center; padding: 40px 0 80px; }
+.waiting-card {
+  max-width: 620px; width: 100%; text-align: center;
+  background: var(--cream); border: 1px solid rgba(34,29,24,0.08);
+  border-radius: 14px; padding: 56px 40px;
+  box-shadow: 0 20px 50px rgba(34,29,24,0.06);
+}
+.waiting-card .eyebrow { color: var(--gold-dark); }
+.waiting-card h1 { font-family: var(--serif); font-size: 32px; font-weight: 600; margin: 14px 0 20px; }
+.waiting-card .lead { font-size: 17px; line-height: 1.75; color: var(--ink); margin: 0 0 16px; }
+.waiting-card p { color: var(--muted); font-size: 15px; line-height: 1.8; margin: 0 0 12px; }
+.waiting-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+@media (max-width: 640px) {
+  .waiting-card { padding: 40px 22px; }
+  .waiting-card h1 { font-size: 25px; }
+}

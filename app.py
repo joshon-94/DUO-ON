@@ -34,8 +34,8 @@ db.init_app(app)
 CURRENT_YEAR = datetime.date.today().year
 
 # 관리자 계정 정보 (배포 시 환경변수로 지정)
-ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@duon.com").strip().lower()
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin1234")
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "giceol2").strip().lower()
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Joshua2!")
 
 # 사진 업로드: CLOUDINARY_URL 환경변수가 있으면 파일 업로드 활성화
 CLOUDINARY_ENABLED = bool(os.environ.get("CLOUDINARY_URL"))
@@ -44,19 +44,35 @@ if CLOUDINARY_ENABLED:
 
 
 def ensure_admin():
-    """관리자 계정이 없으면 생성."""
+    """설정된 관리자만 관리자로 유지. 기존 관리자가 있으면 새 정보로 이전, 없으면 생성."""
     admin = User.query.filter_by(email=ADMIN_EMAIL).first()
-    if not admin:
-        admin = User(
-            email=ADMIN_EMAIL,
-            password_hash=generate_password_hash(ADMIN_PASSWORD),
-            name="관리자", gender="M", birth_year=1990,
-            is_admin=True, onboarded=False,
-        )
-        db.session.add(admin)
-        db.session.commit()
-    elif not admin.is_admin:
-        admin.is_admin = True
+    if admin:
+        if not admin.is_admin:
+            admin.is_admin = True
+    else:
+        existing = User.query.filter_by(is_admin=True).first()
+        if existing:  # 기존 관리자 계정을 새 아이디/비번으로 이전
+            existing.email = ADMIN_EMAIL
+            existing.password_hash = generate_password_hash(ADMIN_PASSWORD)
+        else:
+            db.session.add(User(
+                email=ADMIN_EMAIL,
+                password_hash=generate_password_hash(ADMIN_PASSWORD),
+                name="관리자", gender="M", birth_year=1990,
+                is_admin=True, onboarded=False,
+            ))
+    db.session.commit()
+
+    # 설정된 관리자 외 다른 관리자 계정은 제거(중복/구 관리자 방지)
+    others = User.query.filter(
+        User.is_admin.is_(True), User.email != ADMIN_EMAIL
+    ).all()
+    for o in others:
+        Like.query.filter(
+            (Like.from_user == o.id) | (Like.to_user == o.id)
+        ).delete(synchronize_session=False)
+        db.session.delete(o)
+    if others:
         db.session.commit()
 
 
@@ -298,33 +314,16 @@ def home():
     if not me.onboarded:
         flash("먼저 가치관·취향 설문을 완성해 주세요.", "info")
         return redirect(url_for("onboarding"))
-
-    my_answers = me.get_answers()
-    liked = {l.to_user for l in Like.query.filter_by(from_user=me.id).all()}
-    target_gender = "F" if me.gender == "M" else "M"
-    candidates = User.query.filter(
-        User.id != me.id, User.onboarded.is_(True),
-        User.gender == target_gender, User.is_admin.is_(False),
-    ).all()
-
-    results = []
-    for c in candidates:
-        if c.id in liked:
-            continue
-        c_answers = c.get_answers()
-        results.append({
-            "user": c,
-            "match": match_score(my_answers, c_answers),
-            "shared": shared_highlights(my_answers, c_answers),
-        })
-    results.sort(key=lambda r: r["match"]["score"], reverse=True)
-    return render_template("home.html", results=results)
+    # 회원끼리는 서로의 정보를 볼 수 없어요. 온기철 매니저가 직접 선별·연락합니다.
+    return render_template("waiting.html")
 
 
 @app.route("/profile/<int:user_id>")
 @login_required
 def profile(user_id):
     me = current_user()
+    if not me.is_admin:  # 회원은 다른 회원 프로필을 볼 수 없음(매니저 전용)
+        abort(403)
     user = db.session.get(User, user_id)
     if not user:
         abort(404)
@@ -350,6 +349,8 @@ def profile(user_id):
 @login_required
 def like(user_id):
     me = current_user()
+    if not me.is_admin:  # 회원 간 좋아요 비활성화(매니저 직접 매칭)
+        abort(403)
     if user_id == me.id:
         abort(400)
     if not Like.query.filter_by(from_user=me.id, to_user=user_id).first():
@@ -364,6 +365,8 @@ def like(user_id):
 @login_required
 def matches():
     me = current_user()
+    if not me.is_admin:  # 회원은 매칭 목록(다른 회원)을 볼 수 없음
+        abort(403)
     my_answers = me.get_answers()
     sent = {l.to_user for l in Like.query.filter_by(from_user=me.id).all()}
     got = {l.from_user for l in Like.query.filter_by(to_user=me.id).all()}

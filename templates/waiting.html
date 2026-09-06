@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="waiting">
+  <div class="waiting-card">
+    <span class="eyebrow">가입 완료</span>
+    <h1>정보가 안전하게 저장됐어요</h1>
+    <p class="lead">
+      입력해주신 가치관·취향 정보는 <strong>온기철 매니저(대표)만</strong> 확인해요.
+      다른 회원에게는 <strong>절대 공개되지 않아요.</strong>
+    </p>
+    <p>
+      이제 온기철 매니저가 직접 회원님과 잘 맞는 분을 선별해
+      따로 연락드릴 예정이에요. 편안하게 기다려 주세요!
+    </p>
+    <div class="waiting-actions">
+      <a class="btn" href="{{ url_for('me_page') }}">내 프로필 보기</a>
+      <a class="btn ghost" href="{{ url_for('onboarding') }}">설문 다시 하기</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
