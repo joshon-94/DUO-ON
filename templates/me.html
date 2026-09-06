@@ -31,12 +31,10 @@
       <p class="muted">아직 등록한 사진이 없어요. 아래에서 추가해 보세요.</p>
       {% endif %}
 
-      {% if cloudinary_enabled %}
       <label>사진 추가 (여러 장 선택 가능)
         <input type="file" name="photo_files" accept="image/*" multiple>
       </label>
       <p class="muted small">또는 이미지 주소로 추가할 수 있어요.</p>
-      {% endif %}
       <label>사진 URL로 추가 (선택)
         <input type="url" name="photo_urls" placeholder="https://…/photo.jpg">
       </label>

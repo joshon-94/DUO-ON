@@ -27,6 +27,7 @@
         <td>{{ u.location or '-' }}</td>
         <td class="muted">{{ u.email }}</td>
         <td class="row-actions">
+          <a href="{{ url_for('admin_view', user_id=u.id) }}">보기</a>
           <a href="{{ url_for('admin_edit', user_id=u.id) }}">수정</a>
           <form method="post" action="{{ url_for('admin_delete', user_id=u.id) }}"
                 onsubmit="return confirm('{{ u.name }} 회원을 삭제할까요?');">

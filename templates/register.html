@@ -26,12 +26,10 @@
           <span class="photo-empty">사진 미리보기<br>(여러 장 가능)</span>
         </div>
         <div class="photo-upload-fields">
-          {% if cloudinary_enabled %}
           <label>프로필 사진 (여러 장 선택 가능)
             <input type="file" name="photo_files" accept="image/*" multiple id="photoFiles">
           </label>
           <p class="muted small">또는 아래에 이미지 주소를 붙여넣어도 돼요.</p>
-          {% endif %}
           <label>사진 URL (선택 · 여러 개 가능)
             <input type="url" name="photo_urls" placeholder="https://…/photo1.jpg" class="photo-url-input">
           </label>

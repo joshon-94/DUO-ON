@@ -8,6 +8,7 @@ cj2.txt
 .env
 static/photos/*
 !static/photos/.gitkeep
+static/uploads/
 # 시드용 AI 샘플 얼굴은 배포에 포함 (사용자 업로드 사진은 제외 유지)
 !static/photos/m[0-9].jpg
 !static/photos/w[0-9].jpg

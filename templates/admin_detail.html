@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ user.name }} · 회원 정보 · 듀온{% endblock %}
+{% block content %}
+<div class="form-card wide">
+  <a class="back-link" href="{{ url_for('admin_list') }}">← 회원 목록</a>
+
+  <div class="admin-head">
+    <div>
+      <h2>{{ user.name }}</h2>
+      <p class="muted">
+        {{ '남' if user.gender == 'M' else '여' }} ·
+        {{ user.birth_year | age }}세{% if user.location %} · {{ user.location }}{% endif %} ·
+        {{ user.email }}
+      </p>
+    </div>
+    <a class="btn" href="{{ url_for('admin_edit', user_id=user.id) }}">수정</a>
+  </div>
+
+  {% set photos = user.get_photos() %}
+  {% if photos %}
+  <h3 class="section-title">사진</h3>
+  <div class="my-photos">
+    {% for url in photos %}
+    <div class="my-photo">
+      <div class="my-photo-img" style="background-image:url('{{ url }}')">
+        {% if loop.first %}<span class="thumb-badge">대표</span>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if user.bio %}
+  <h3 class="section-title">소개글</h3>
+  <p>{{ user.bio }}</p>
+  {% endif %}
+
+  <h3 class="section-title">가치관</h3>
+  <ul class="answer-list">
+    {% for a in grouped['values'] %}
+      <li><span class="q">{{ a.text }}</span><span class="a">{{ a.display }}</span></li>
+    {% else %}
+      <li class="muted">아직 설문 답변이 없어요.</li>
+    {% endfor %}
+  </ul>
+
+  <h3 class="section-title">취향</h3>
+  <ul class="answer-list">
+    {% for a in grouped['taste'] %}
+      <li><span class="q">{{ a.text }}</span><span class="a">{{ a.display }}</span></li>
+    {% else %}
+      <li class="muted">아직 설문 답변이 없어요.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

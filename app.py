@@ -4,7 +4,9 @@
 배포(Render): gunicorn app:app  (DATABASE_URL 환경변수로 PostgreSQL 사용)
 """
 import datetime
+import json
 import os
+import uuid
 from functools import wraps
 
 from flask import (
@@ -14,6 +16,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 import cloudinary
 import cloudinary.uploader
+import requests
 
 from models import db, User, Like
 from questions import (
@@ -43,6 +46,16 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")  # 미설정이면 기존 DB �
 CLOUDINARY_ENABLED = bool(os.environ.get("CLOUDINARY_URL"))
 if CLOUDINARY_ENABLED:
     cloudinary.config(secure=True)  # CLOUDINARY_URL을 자동으로 읽음
+
+# Cloudinary 미설정 시 파일을 저장할 로컬 폴더
+UPLOAD_DIR = os.path.join(app.static_folder, "uploads")
+ALLOWED_IMG_EXT = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+
+# 카카오톡 "나에게 보내기" 알림 (회원가입 시 관리자에게 알림)
+# - KAKAO_REST_API_KEY: 카카오 디벨로퍼스 앱의 REST API 키
+# - KAKAO_REFRESH_TOKEN: 본인 계정 OAuth로 발급한 refresh token (kakao_token.py 참고)
+KAKAO_REST_API_KEY = os.environ.get("KAKAO_REST_API_KEY")
+KAKAO_REFRESH_TOKEN = os.environ.get("KAKAO_REFRESH_TOKEN")
 
 
 def ensure_admin():
@@ -144,6 +157,69 @@ def photo_for(user):
     return user.photo_url or None
 
 
+def save_image_file(file):
+    """업로드된 이미지 파일을 저장하고 접근 URL을 반환한다.
+
+    Cloudinary가 설정돼 있으면 Cloudinary에(영구), 아니면 static/uploads/에 저장한다.
+    (주의: Render 무료 플랜은 재배포 시 로컬 파일이 사라지므로 Cloudinary 권장)
+    """
+    if CLOUDINARY_ENABLED:
+        res = cloudinary.uploader.upload(file, folder="duon")
+        return res["secure_url"]
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in ALLOWED_IMG_EXT:
+        ext = ".jpg"
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    name = uuid.uuid4().hex + ext
+    file.save(os.path.join(UPLOAD_DIR, name))
+    return url_for("static", filename="uploads/" + name)
+
+
+def notify_new_signup(user):
+    """회원가입 시 관리자 카카오톡('나에게 보내기')으로 알림을 보낸다.
+
+    KAKAO_REST_API_KEY / KAKAO_REFRESH_TOKEN 환경변수가 없으면 조용히 넘어간다.
+    실패해도 가입 자체는 진행되도록 예외를 삼킨다.
+    """
+    if not (KAKAO_REST_API_KEY and KAKAO_REFRESH_TOKEN):
+        return
+    try:
+        token_res = requests.post(
+            "https://kauth.kakao.com/oauth/token",
+            data={
+                "grant_type": "refresh_token",
+                "client_id": KAKAO_REST_API_KEY,
+                "refresh_token": KAKAO_REFRESH_TOKEN,
+            },
+            timeout=5,
+        )
+        access_token = token_res.json().get("access_token")
+        if not access_token:
+            print("[kakao] access_token 발급 실패:", token_res.text)
+            return
+        gender = "남" if user.gender == "M" else "여"
+        age = CURRENT_YEAR - int(user.birth_year) + 1 if user.birth_year else "-"
+        text = (
+            "[듀온] 새 회원이 가입했어요!\n"
+            "이름: %s\n성별: %s\n나이: %s세\n지역: %s\n이메일: %s"
+            % (user.name, gender, age, user.location or "-", user.email)
+        )
+        template = {
+            "object_type": "text",
+            "text": text,
+            "link": {"web_url": "https://duon.onrender.com/admin"},
+            "button_title": "회원 관리 열기",
+        }
+        requests.post(
+            "https://kapi.kakao.com/v2/api/talk/memo/default/send",
+            headers={"Authorization": "Bearer " + access_token},
+            data={"template_object": json.dumps(template, ensure_ascii=False)},
+            timeout=5,
+        )
+    except Exception as exc:
+        print("[kakao] 알림 전송 실패:", exc)
+
+
 def collect_photos(form, files):
     """폼에서 사진 URL/파일을 모두 모아 URL 리스트로 반환.
 
@@ -167,11 +243,8 @@ def collect_photos(form, files):
     for f in file_list:
         if not (f and f.filename):
             continue
-        if not CLOUDINARY_ENABLED:
-            return None, "사진 파일 업로드 설정이 아직 없어요. 사진 URL을 입력하거나 나중에 프로필에서 추가해 주세요."
         try:
-            res = cloudinary.uploader.upload(f, folder="duon")
-            uploaded.append(res["secure_url"])
+            uploaded.append(save_image_file(f))
         except Exception as exc:
             return None, "사진 업로드에 실패했어요: %s" % exc
 
@@ -270,6 +343,7 @@ def register():
         user.set_photos(photos)
         db.session.add(user)
         db.session.commit()
+        notify_new_signup(user)  # 관리자 카카오톡 알림 (설정된 경우)
         session["user_id"] = user.id
         flash("환영해요! 가치관·취향 설문을 완성하면 추천이 시작돼요.", "success")
         return redirect(url_for("onboarding"))
@@ -426,6 +500,16 @@ def admin_list():
     return render_template("admin_list.html", users=users)
 
 
+@app.route("/admin/<int:user_id>")
+@admin_required
+def admin_view(user_id):
+    user = db.session.get(User, user_id)
+    if not user or user.is_admin:
+        abort(404)
+    grouped = group_answers(user.get_answers())
+    return render_template("admin_detail.html", user=user, grouped=grouped)
+
+
 @app.route("/admin/new", methods=["GET", "POST"])
 @admin_required
 def admin_new():
@@ -511,16 +595,12 @@ def _save_member(user, form, files=None):
         flash("이미 사용 중인 이메일이에요.", "error")
         return False
 
-    # 사진: 파일 업로드(Cloudinary) 우선, 없으면 URL 입력값 사용
+    # 사진: 파일 업로드 우선(Cloudinary 또는 로컬 저장), 없으면 URL 입력값 사용
     photo_url = form.get("photo_url", "").strip()
     photo_file = files.get("photo_file") if files else None
     if photo_file and photo_file.filename:
-        if not CLOUDINARY_ENABLED:
-            flash("사진 업로드 설정이 아직 없어요. 우선 사진 URL을 입력해 주세요.", "error")
-            return False
         try:
-            result = cloudinary.uploader.upload(photo_file, folder="duon")
-            photo_url = result["secure_url"]
+            photo_url = save_image_file(photo_file)
         except Exception as exc:
             flash("사진 업로드에 실패했어요: %s" % exc, "error")
             return False
