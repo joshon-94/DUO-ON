@@ -57,6 +57,12 @@ ALLOWED_IMG_EXT = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
 KAKAO_REST_API_KEY = os.environ.get("KAKAO_REST_API_KEY")
 KAKAO_REFRESH_TOKEN = os.environ.get("KAKAO_REFRESH_TOKEN")
 
+# 텔레그램 알림 (회원가입 시 관리자에게 알림) - 카카오보다 설정이 간단
+# - TELEGRAM_BOT_TOKEN: @BotFather로 만든 봇 토큰 (예: 123456789:ABC...)
+# - TELEGRAM_CHAT_ID: 알림 받을 본인 chat id
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+
 
 def ensure_admin():
     """설정된 관리자만 관리자로 유지. ADMIN_PASSWORD 환경변수가 있으면 비밀번호를 동기화하고,
@@ -175,12 +181,42 @@ def save_image_file(file):
     return url_for("static", filename="uploads/" + name)
 
 
-def notify_new_signup(user):
-    """회원가입 시 관리자 카카오톡('나에게 보내기')으로 알림을 보낸다.
+def _signup_message(user):
+    """가입 알림에 쓸 회원 요약 문자열."""
+    gender = "남" if user.gender == "M" else "여"
+    age = CURRENT_YEAR - int(user.birth_year) + 1 if user.birth_year else "-"
+    return (
+        "[듀온] 새 회원이 가입했어요!\n"
+        "이름: %s\n성별: %s\n나이: %s세\n지역: %s\n이메일: %s\n"
+        "회원 관리: https://duon.onrender.com/admin"
+        % (user.name, gender, age, user.location or "-", user.email)
+    )
 
-    KAKAO_REST_API_KEY / KAKAO_REFRESH_TOKEN 환경변수가 없으면 조용히 넘어간다.
+
+def notify_telegram(user):
+    """회원가입 시 관리자 텔레그램으로 알림을 보낸다.
+
+    TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID 환경변수가 없으면 조용히 넘어간다.
+    """
+    if not (TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID):
+        return
+    try:
+        requests.post(
+            "https://api.telegram.org/bot%s/sendMessage" % TELEGRAM_BOT_TOKEN,
+            data={"chat_id": TELEGRAM_CHAT_ID, "text": _signup_message(user)},
+            timeout=5,
+        )
+    except Exception as exc:
+        print("[telegram] 알림 전송 실패:", exc)
+
+
+def notify_new_signup(user):
+    """회원가입 시 관리자에게 알림(텔레그램 + 카카오톡)을 보낸다.
+
+    각 채널은 관련 환경변수가 없으면 조용히 넘어간다.
     실패해도 가입 자체는 진행되도록 예외를 삼킨다.
     """
+    notify_telegram(user)
     if not (KAKAO_REST_API_KEY and KAKAO_REFRESH_TOKEN):
         return
     try:
