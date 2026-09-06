@@ -33,9 +33,11 @@ db.init_app(app)
 
 CURRENT_YEAR = datetime.date.today().year
 
-# 관리자 계정 정보 (배포 시 환경변수로 지정)
+# 관리자 계정 정보
+# - 아이디는 기본값(giceol2) 허용, 비밀번호는 소스에 두지 않음(보안).
+# - 실제 비밀번호는 Render Environment 등의 ADMIN_PASSWORD 환경변수로 지정.
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "giceol2").strip().lower()
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Joshua2!")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")  # 미설정이면 기존 DB 비밀번호 유지
 
 # 사진 업로드: CLOUDINARY_URL 환경변수가 있으면 파일 업로드 활성화
 CLOUDINARY_ENABLED = bool(os.environ.get("CLOUDINARY_URL"))
@@ -44,23 +46,29 @@ if CLOUDINARY_ENABLED:
 
 
 def ensure_admin():
-    """설정된 관리자만 관리자로 유지. 기존 관리자가 있으면 새 정보로 이전, 없으면 생성."""
+    """설정된 관리자만 관리자로 유지. ADMIN_PASSWORD 환경변수가 있으면 비밀번호를 동기화하고,
+    없으면 기존 DB의 비밀번호를 그대로 유지한다(소스에 비밀번호를 두지 않기 위함)."""
     admin = User.query.filter_by(email=ADMIN_EMAIL).first()
     if admin:
         if not admin.is_admin:
             admin.is_admin = True
+        if ADMIN_PASSWORD:  # 환경변수가 있으면 비밀번호 동기화
+            admin.password_hash = generate_password_hash(ADMIN_PASSWORD)
     else:
         existing = User.query.filter_by(is_admin=True).first()
-        if existing:  # 기존 관리자 계정을 새 아이디/비번으로 이전
+        if existing:  # 기존 관리자 계정을 설정된 아이디로 이전
             existing.email = ADMIN_EMAIL
-            existing.password_hash = generate_password_hash(ADMIN_PASSWORD)
-        else:
+            if ADMIN_PASSWORD:
+                existing.password_hash = generate_password_hash(ADMIN_PASSWORD)
+        elif ADMIN_PASSWORD:  # 관리자가 없고 비밀번호가 주어진 경우에만 신규 생성
             db.session.add(User(
                 email=ADMIN_EMAIL,
                 password_hash=generate_password_hash(ADMIN_PASSWORD),
                 name="관리자", gender="M", birth_year=1990,
                 is_admin=True, onboarded=False,
             ))
+        else:
+            print("[warn] 관리자 계정이 없고 ADMIN_PASSWORD도 미설정이라 관리자를 만들지 못했어요.")
     db.session.commit()
 
     # 설정된 관리자 외 다른 관리자 계정은 제거(중복/구 관리자 방지)
