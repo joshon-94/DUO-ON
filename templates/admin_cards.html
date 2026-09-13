@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}회원 카드 · 듀온{% endblock %}
+{% block content %}
+<div class="admin-head">
+  <div>
+    <h2>회원 카드</h2>
+    <p class="muted">가입한 회원 {{ members|length }}명의 프로필 카드가 저장된 정보로 자동 생성돼요. 카드 아래 버튼으로 이미지를 저장하세요.</p>
+  </div>
+  <div class="head-actions">
+    <a class="btn ghost-btn" href="{{ url_for('admin_card') }}">빈 카드 직접 만들기</a>
+    <a class="btn ghost-btn" href="{{ url_for('admin_list') }}">← 회원 목록</a>
+  </div>
+</div>
+
+{% if members %}
+<div class="card-gallery" id="gallery"></div>
+{% else %}
+<div class="empty"><p>아직 등록된 회원이 없어요.</p></div>
+{% endif %}
+
+<script id="members-data" type="application/json">{{ members|tojson }}</script>
+<script>
+(function(){
+  var MEMBERS = JSON.parse(document.getElementById('members-data').textContent);
+  var gallery = document.getElementById('gallery');
+  if (!gallery) return;
+  var W = 800, H = 1120;
+
+  function roundRect(ctx,x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+  function drawCover(ctx,im,x,y,w,h,r){
+    ctx.save(); roundRect(ctx,x,y,w,h,r); ctx.clip();
+    var s = Math.max(w/im.width, h/im.height);
+    var iw = im.width*s, ih = im.height*s;
+    ctx.drawImage(im, x+(w-iw)/2, y+(h-ih)/2, iw, ih);
+    ctx.restore();
+  }
+  function wrapText(ctx,text,x,y,maxWidth,lineHeight,maxLines){
+    var words = text.split(' '), line = '', lines = 0;
+    for (var i=0;i<words.length;i++){
+      var test = line ? line+' '+words[i] : words[i];
+      if (ctx.measureText(test).width > maxWidth && line){
+        ctx.fillText(line,x,y); y += lineHeight; lines++; line = words[i];
+        if (lines >= maxLines) return y;
+      } else { line = test; }
+    }
+    ctx.fillText(line,x,y);
+    return y + lineHeight;
+  }
+  function drawFooter(ctx){
+    ctx.fillStyle = '#F1EFE8'; ctx.fillRect(48,1026,704,1);
+    ctx.fillStyle = '#ED93B1'; ctx.beginPath(); ctx.arc(64,1058,17,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#993556'; ctx.beginPath(); ctx.arc(88,1058,17,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#FBEAF0'; ctx.beginPath(); ctx.arc(76,1058,5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#2C2C2A'; ctx.font = '600 30px sans-serif'; ctx.fillText('듀온',118,1068);
+    ctx.fillStyle = '#B4B2A9'; ctx.font = '400 22px sans-serif'; ctx.fillText('duon',180,1068);
+  }
+
+  function draw(ctx, d, imgs){
+    ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0,0,W,H);
+    var n = imgs.length;
+    var mainH = n > 1 ? 430 : 540;
+    if (n > 0){
+      drawCover(ctx,imgs[0],40,40,720,mainH,24);
+    } else {
+      ctx.save(); roundRect(ctx,40,40,720,mainH,24); ctx.clip();
+      ctx.fillStyle = '#F1EFE8'; ctx.fillRect(40,40,720,mainH);
+      ctx.fillStyle = '#B4B2A9'; ctx.font = '400 26px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('사진 없음',400,40+mainH/2);
+      ctx.textAlign = 'left'; ctx.restore();
+    }
+    var y = 40 + mainH;
+    if (n > 1){
+      var k = n-1;
+      var tw = (720 - (k-1)*10)/k;
+      var th = k >= 4 ? 128 : 146;
+      for (var i=0;i<k;i++){ drawCover(ctx,imgs[i+1], 40+i*(tw+10), y+12, tw, th, 12); }
+      y += 12 + th;
+    }
+    y += 62;
+    var name = d.name || '이름';
+    ctx.fillStyle = '#2C2C2A'; ctx.font = '600 50px sans-serif';
+    ctx.fillText(name,48,y);
+    var cx = 48 + ctx.measureText(name).width + 16;
+    if (d.age){
+      ctx.fillStyle = '#888780'; ctx.font = '400 34px sans-serif';
+      ctx.fillText(d.age,cx,y); cx += ctx.measureText(d.age).width + 16;
+    }
+    var mbti = (d.mbti||'').toUpperCase();
+    if (mbti){
+      ctx.font = '600 24px sans-serif';
+      var mw = ctx.measureText(mbti).width + 34;
+      ctx.fillStyle = '#EEEDFE'; roundRect(ctx,cx,y-30,mw,42,21); ctx.fill();
+      ctx.fillStyle = '#3C3489'; ctx.fillText(mbti,cx+17,y-2);
+    }
+    var meta = [d.region, d.job, d.height ? d.height+'cm' : '', d.religion].filter(Boolean).join('  ·  ');
+    y += 50;
+    if (meta){
+      ctx.fillStyle = '#5F5E5A'; ctx.font = '400 28px sans-serif';
+      y = wrapText(ctx,meta,48,y,704,42,2) + 12;
+    }
+    if (d.bio){
+      ctx.fillStyle = '#2C2C2A'; ctx.font = '400 30px sans-serif';
+      y = wrapText(ctx,d.bio,48,y,704,44,2) + 8;
+    }
+    var tags = (d.tags||[]);
+    var tx = 48, ty = y;
+    ctx.font = '400 24px sans-serif';
+    for (var j=0;j<tags.length;j++){
+      var pw = ctx.measureText(tags[j]).width + 40;
+      if (tx + pw > 752){ tx = 48; ty += 54; }
+      ctx.fillStyle = '#FBEAF0'; roundRect(ctx,tx,ty,pw,44,22); ctx.fill();
+      ctx.fillStyle = '#993556'; ctx.fillText(tags[j],tx+20,ty+30);
+      tx += pw + 10;
+    }
+    drawFooter(ctx);
+  }
+
+  function loadImages(urls, cb){
+    if (!urls.length) return cb([]);
+    var imgs = new Array(urls.length), left = urls.length;
+    urls.forEach(function(u, i){
+      var im = new Image();
+      im.onload = function(){ imgs[i] = im; if(--left===0) cb(imgs.filter(Boolean)); };
+      im.onerror = function(){ imgs[i] = null; if(--left===0) cb(imgs.filter(Boolean)); };
+      im.src = u;
+    });
+  }
+
+  MEMBERS.forEach(function(d){
+    var cell = document.createElement('div');
+    cell.className = 'card-cell';
+    var cv = document.createElement('canvas');
+    cv.width = W; cv.height = H; cv.className = 'gcard';
+    var meta = document.createElement('div'); meta.className = 'card-meta';
+    meta.innerHTML = '<span class="card-title">'+d.name+' <span class="muted">'+d.gender+(d.age?' · '+d.age+'세':'')+'</span></span>';
+    var btn = document.createElement('button'); btn.className='btn'; btn.textContent='이미지 저장';
+    btn.addEventListener('click', function(){
+      try {
+        var a = document.createElement('a');
+        a.download = d.name + '_duon.png';
+        a.href = cv.toDataURL('image/png');
+        a.click();
+      } catch(e){
+        alert('이 회원 사진이 외부 링크라 저장이 막혔어요. 사진을 파일로 다시 올리면 저장돼요.');
+      }
+    });
+    meta.appendChild(btn);
+    cell.appendChild(cv); cell.appendChild(meta);
+    gallery.appendChild(cell);
+    var ctx = cv.getContext('2d');
+    loadImages(d.photos || [], function(imgs){ draw(ctx, d, imgs); });
+  });
+})();
+</script>
+{% endblock %}

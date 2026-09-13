@@ -611,6 +611,38 @@ def admin_card():
     return render_template("admin_card.html")
 
 
+def _card_data(user):
+    """회원의 저장된 정보로 프로필 카드에 쓸 데이터 dict를 만든다."""
+    ans = user.get_answers()
+    religion = option_label("religion", ans["religion"]) if ans.get("religion") else ""
+    hobbies = []
+    if ans.get("hobbies"):
+        hobbies = [option_label("hobbies", k) for k in ans["hobbies"].split(",") if k]
+    age = (CURRENT_YEAR - int(user.birth_year) + 1) if user.birth_year else ""
+    return {
+        "id": user.id,
+        "name": user.name,
+        "gender": "남" if user.gender == "M" else "여",
+        "age": str(age),
+        "mbti": ans.get("mbti", ""),
+        "height": "",
+        "region": user.location or "",
+        "job": "",
+        "religion": religion,
+        "bio": user.bio or "",
+        "tags": hobbies,
+        "photos": user.get_photos(),
+    }
+
+
+@app.route("/admin/cards")
+@admin_required
+def admin_cards():
+    users = User.query.filter_by(is_admin=False).order_by(User.id.desc()).all()
+    members = [_card_data(u) for u in users]
+    return render_template("admin_cards.html", members=members)
+
+
 @app.route("/admin/new", methods=["GET", "POST"])
 @admin_required
 def admin_new():

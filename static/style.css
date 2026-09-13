@@ -564,6 +564,18 @@ input:focus, textarea:focus { outline: none; border-color: var(--gold); }
 .best-item .best-name { font-weight: 700; color: var(--ink); font-size: 16px; }
 .best-item .best-sub { font-size: 12px; color: var(--muted); }
 .best-item .shared-inline { margin-top: 6px; }
+.card-gallery {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 22px; margin-top: 8px;
+}
+.card-cell { display: flex; flex-direction: column; gap: 12px; }
+.gcard {
+  width: 100%; height: auto; display: block;
+  border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow);
+}
+.card-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.card-title { font-weight: 700; color: var(--ink); }
+.card-title .muted { font-weight: 400; }
 .survey textarea, .survey input[type="url"] {
   width: 100%; padding: 13px 15px; border: 1.5px solid var(--line);
   border-radius: var(--radius-sm); font: inherit; box-sizing: border-box;

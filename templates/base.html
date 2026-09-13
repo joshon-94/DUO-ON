@@ -19,6 +19,7 @@
       {% if me and me.is_admin %}
         <a href="{{ url_for('admin_list') }}">회원 관리</a>
         <a href="{{ url_for('admin_matches') }}">궁합 랭킹</a>
+        <a href="{{ url_for('admin_cards') }}">회원 카드</a>
         <a href="{{ url_for('admin_card') }}">카드 생성</a>
         <a class="ghost" href="{{ url_for('logout') }}">로그아웃</a>
       {% elif me %}
