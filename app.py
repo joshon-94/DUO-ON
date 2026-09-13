@@ -543,7 +543,72 @@ def admin_view(user_id):
     if not user or user.is_admin:
         abort(404)
     grouped = group_answers(user.get_answers())
-    return render_template("admin_detail.html", user=user, grouped=grouped)
+    best = _best_matches_for(user)
+    return render_template(
+        "admin_detail.html", user=user, grouped=grouped, best=best
+    )
+
+
+def _best_matches_for(user, limit=6):
+    """해당 회원과 가장 잘 맞는 이성 회원 목록(궁합 높은 순)."""
+    my_answers = user.get_answers()
+    if not my_answers:
+        return []
+    opposite = "F" if user.gender == "M" else "M"
+    candidates = User.query.filter_by(is_admin=False, gender=opposite).all()
+    out = []
+    for c in candidates:
+        c_answers = c.get_answers()
+        if not c_answers:
+            continue
+        out.append({
+            "user": c,
+            "match": match_score(my_answers, c_answers),
+            "shared": shared_highlights(my_answers, c_answers),
+        })
+    out.sort(key=lambda r: r["match"]["score"], reverse=True)
+    return out[:limit]
+
+
+def _pair_ranking():
+    """모든 남↔여 회원 조합의 궁합을 계산해 높은 순으로 정렬한 목록을 반환."""
+    users = User.query.filter_by(is_admin=False).all()
+    males = [u for u in users if u.gender == "M"]
+    females = [u for u in users if u.gender == "F"]
+    pairs = []
+    for m in males:
+        ma = m.get_answers()
+        if not ma:
+            continue
+        for f in females:
+            fa = f.get_answers()
+            if not fa:
+                continue
+            pairs.append({
+                "man": m,
+                "woman": f,
+                "match": match_score(ma, fa),
+                "shared": shared_highlights(ma, fa),
+            })
+    pairs.sort(key=lambda p: p["match"]["score"], reverse=True)
+    # 설문을 아직 안 한 회원(궁합 계산 불가) 목록도 함께 안내
+    no_survey = [u for u in users if not u.get_answers()]
+    return pairs, no_survey
+
+
+@app.route("/admin/matches")
+@admin_required
+def admin_matches():
+    pairs, no_survey = _pair_ranking()
+    return render_template(
+        "admin_matches.html", pairs=pairs, no_survey=no_survey
+    )
+
+
+@app.route("/admin/card")
+@admin_required
+def admin_card():
+    return render_template("admin_card.html")
 
 
 @app.route("/admin/new", methods=["GET", "POST"])

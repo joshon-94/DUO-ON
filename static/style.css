@@ -518,6 +518,52 @@ input:focus, textarea:focus { outline: none; border-color: var(--gold); }
 .link-danger:hover { color: var(--gold-dark); }
 .back-link { display: inline-block; margin-bottom: 14px; color: var(--muted); font-weight: 600; }
 .back-link:hover { color: var(--ink); }
+
+/* ===== 궁합 랭킹 ===== */
+.head-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.btn.ghost-btn { background: #fff; color: var(--ink); border: 1.5px solid var(--line-strong); }
+.btn.ghost-btn:hover { border-color: var(--gold); color: var(--gold-dark); }
+
+.score-pill {
+  display: inline-block; min-width: 52px; text-align: center;
+  font-weight: 800; font-size: 14px; padding: 5px 12px; border-radius: 999px;
+  color: #fff;
+}
+.score-pill.hi { background: linear-gradient(135deg, #cbab68, #a9863f); }
+.score-pill.mid { background: #e6d8b8; color: #6f5a25; }
+.score-pill.lo { background: #ece5d8; color: var(--muted); }
+
+.match-rank td { vertical-align: middle; }
+.match-rank .rank { font-size: 18px; font-weight: 800; color: var(--muted); width: 40px; }
+.match-rank .who { display: block; font-weight: 700; color: var(--ink); }
+.match-rank .who:hover { color: var(--gold-dark); }
+.match-rank .who-sub { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.match-rank tr.top-pair { background: #fdfaf2; }
+.match-rank tr.top-pair:hover { background: #fbf5e6; }
+.shared-inline { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.notice-box {
+  margin-top: 20px; padding: 16px 18px; background: var(--cream);
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  color: var(--ink-2); font-size: 14px;
+}
+.notice-box .shared-chip { text-decoration: none; }
+
+/* 회원 상세: 가장 잘 맞는 상대 */
+.best-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px; margin: 4px 0 8px;
+}
+.best-item {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: #fff; text-decoration: none;
+}
+.best-item:hover { border-color: var(--gold-line); box-shadow: var(--shadow); }
+.best-item .best-score { align-self: flex-start; margin-bottom: 4px; }
+.best-item .best-name { font-weight: 700; color: var(--ink); font-size: 16px; }
+.best-item .best-sub { font-size: 12px; color: var(--muted); }
+.best-item .shared-inline { margin-top: 6px; }
 .survey textarea, .survey input[type="url"] {
   width: 100%; padding: 13px 15px; border: 1.5px solid var(--line);
   border-radius: var(--radius-sm); font: inherit; box-sizing: border-box;

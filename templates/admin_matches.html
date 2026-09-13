@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}궁합 랭킹 · 듀온{% endblock %}
+{% macro pill(score) -%}
+  <span class="score-pill {{ 'hi' if score >= 70 else ('mid' if score >= 45 else 'lo') }}">{{ score }}%</span>
+{%- endmacro %}
+{% block content %}
+<div class="admin-head">
+  <div>
+    <h2>궁합 랭킹</h2>
+    <p class="muted">모든 남↔여 회원 조합의 가치관·취향 궁합을 자동 계산했어요. 높은 순으로 정렬됩니다.</p>
+  </div>
+  <a class="btn ghost-btn" href="{{ url_for('admin_list') }}">← 회원 목록</a>
+</div>
+
+{% if pairs %}
+<div class="admin-table match-rank">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>남성</th><th>여성</th>
+        <th>궁합</th><th>가치관</th><th>취향</th><th>공통점</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in pairs %}
+      <tr class="{{ 'top-pair' if loop.index <= 3 }}">
+        <td class="rank">
+          {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
+        </td>
+        <td>
+          <a class="who" href="{{ url_for('admin_view', user_id=p.man.id) }}">{{ p.man.name }}</a>
+          <span class="who-sub">{{ p.man.birth_year | age }}세{% if p.man.location %} · {{ p.man.location }}{% endif %}</span>
+        </td>
+        <td>
+          <a class="who" href="{{ url_for('admin_view', user_id=p.woman.id) }}">{{ p.woman.name }}</a>
+          <span class="who-sub">{{ p.woman.birth_year | age }}세{% if p.woman.location %} · {{ p.woman.location }}{% endif %}</span>
+        </td>
+        <td>{{ pill(p.match.score) }}</td>
+        <td class="muted">{{ p.match.values }}%</td>
+        <td class="muted">{{ p.match.taste }}%</td>
+        <td>
+          <div class="shared-inline">
+            {% for s in p.shared %}<span class="shared-chip">{{ s }}</span>{% else %}<span class="muted">-</span>{% endfor %}
+          </div>
+        </td>
+        <td class="row-actions">
+          <a href="{{ url_for('admin_view', user_id=p.man.id) }}">남 상세</a>
+          <a href="{{ url_for('admin_view', user_id=p.woman.id) }}">여 상세</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty">
+  <p>궁합을 계산할 조합이 아직 없어요. 설문을 완료한 남성·여성 회원이 각각 최소 1명씩 필요해요.</p>
+</div>
+{% endif %}
+
+{% if no_survey %}
+<div class="notice-box">
+  <strong>설문 미완료 {{ no_survey|length }}명</strong> — 아래 회원은 가치관·취향 설문이 없어 궁합 계산에서 빠졌어요.
+  <div class="shared-inline" style="margin-top:8px">
+    {% for u in no_survey %}
+    <a class="shared-chip" href="{{ url_for('admin_edit', user_id=u.id) }}">{{ u.name }} ({{ '남' if u.gender=='M' else '여' }})</a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

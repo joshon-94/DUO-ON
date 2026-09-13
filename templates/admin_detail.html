@@ -35,6 +35,26 @@
   <p>{{ user.bio }}</p>
   {% endif %}
 
+  <h3 class="section-title">가장 잘 맞는 상대 {% if best %}<span class="muted" style="font-weight:400;font-size:14px">(궁합 높은 순)</span>{% endif %}</h3>
+  {% if best %}
+  <div class="best-grid">
+    {% for r in best %}
+    <a class="best-item" href="{{ url_for('admin_view', user_id=r.user.id) }}">
+      <span class="best-score score-pill {{ 'hi' if r.match.score >= 70 else ('mid' if r.match.score >= 45 else 'lo') }}">{{ r.match.score }}%</span>
+      <span class="best-name">{{ r.user.name }}</span>
+      <span class="best-sub">{{ r.user.birth_year | age }}세{% if r.user.location %} · {{ r.user.location }}{% endif %}</span>
+      <span class="shared-inline">
+        {% for s in r.shared %}<span class="shared-chip">{{ s }}</span>{% endfor %}
+      </span>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">설문을 완료한 이성 회원이 있어야 궁합을 계산할 수 있어요.
+    {% if not user.get_answers() %}(이 회원의 설문이 아직 없어요.){% endif %}
+  </p>
+  {% endif %}
+
   <h3 class="section-title">가치관</h3>
   <ul class="answer-list">
     {% for a in grouped['values'] %}
