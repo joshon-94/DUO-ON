@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}연애 뉴스 · 트렌드 · 듀온{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('magazine') }}">← 연애 매거진</a>
+<h1 class="page-title">연애 뉴스 · 트렌드</h1>
+<p class="page-sub">요즘 만남은 이렇게 바뀌고 있어요.</p>
+
+<div class="news-list">
+  {% for n in news %}
+  <div class="news-item">
+    <span class="news-emoji">{{ n.emoji }}</span>
+    <div class="news-body">
+      <div class="news-meta"><span class="news-tag">{{ n.tag }}</span><span class="news-date">{{ n.date }}</span></div>
+      <h3>{{ n.title }}</h3>
+      <p>{{ n.summary }}</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

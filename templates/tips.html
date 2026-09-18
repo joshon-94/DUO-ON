@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}연애 팁 · 듀온{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('magazine') }}">← 연애 매거진</a>
+<h1 class="page-title">연애 팁</h1>
+<p class="page-sub">첫 만남부터 오래가는 관계까지, 바로 써먹는 현실 조언.</p>
+
+<div class="tip-grid">
+  {% for t in tips %}
+  <a class="tip-card" href="{{ url_for('tip_detail', slug=t.slug) }}">
+    <span class="tip-emoji">{{ t.emoji }}</span>
+    <span class="tip-cat">{{ t.category }}</span>
+    <span class="tip-title">{{ t.title }}</span>
+    <span class="tip-summary">{{ t.summary }}</span>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

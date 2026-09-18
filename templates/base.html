@@ -21,12 +21,15 @@
         <a href="{{ url_for('admin_matches') }}">궁합 랭킹</a>
         <a href="{{ url_for('admin_cards') }}">회원 카드</a>
         <a href="{{ url_for('admin_card') }}">카드 생성</a>
+        <a href="{{ url_for('magazine') }}">연애 매거진</a>
         <a class="ghost" href="{{ url_for('logout') }}">로그아웃</a>
       {% elif me %}
         <a href="{{ url_for('home') }}">홈</a>
+        <a href="{{ url_for('magazine') }}">연애 매거진</a>
         <a href="{{ url_for('me_page') }}">내 프로필</a>
         <a class="ghost" href="{{ url_for('logout') }}">로그아웃</a>
       {% else %}
+        <a href="{{ url_for('magazine') }}">연애 매거진</a>
         <a href="{{ url_for('login') }}">로그인</a>
         <a class="btn" href="{{ url_for('register') }}">시작하기</a>
       {% endif %}

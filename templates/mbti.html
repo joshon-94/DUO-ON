@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}MBTI 궁합 · 듀온{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('magazine') }}">← 연애 매거진</a>
+<h1 class="page-title">MBTI 궁합</h1>
+<p class="page-sub">우리 둘, 얼마나 잘 맞을까요? 두 유형을 골라보세요.</p>
+
+<form class="mbti-form" method="get" action="{{ url_for('mbti') }}">
+  <div class="mbti-picker">
+    <label>나의 MBTI
+      <select name="a">
+        <option value="">선택</option>
+        {% for t in types %}
+        <option value="{{ t }}" {% if t == sel_a %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <span class="mbti-heart">💛</span>
+    <label>상대의 MBTI
+      <select name="b">
+        <option value="">선택</option>
+        {% for t in types %}
+        <option value="{{ t }}" {% if t == sel_b %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+  <button class="btn" type="submit">궁합 보기</button>
+</form>
+
+{% if result %}
+<div class="mbti-result">
+  <div class="mbti-result-head">
+    <span class="mbti-pair">{{ result.a }} <span class="x">×</span> {{ result.b }}</span>
+    <span class="mbti-grade">{{ result.grade }}</span>
+  </div>
+  <div class="mbti-score-bar"><span style="width: {{ result.score }}%"></span></div>
+  <div class="mbti-score-num">{{ result.score }}<small>%</small></div>
+  <p class="mbti-comment">{{ result.comment }}</p>
+  <div class="mbti-pair-info">
+    <div class="mbti-mini"><span class="mbti-mini-emoji">{{ info[result.a].emoji }}</span><b>{{ result.a }}</b> {{ info[result.a].nick }}<p>{{ info[result.a].love }}</p></div>
+    <div class="mbti-mini"><span class="mbti-mini-emoji">{{ info[result.b].emoji }}</span><b>{{ result.b }}</b> {{ info[result.b].nick }}<p>{{ info[result.b].love }}</p></div>
+  </div>
+</div>
+{% endif %}
+
+<h2 class="section-title">16가지 유형의 연애 스타일</h2>
+<div class="mbti-grid">
+  {% for code, m in info.items() %}
+  <div class="mbti-card">
+    <span class="mbti-card-emoji">{{ m.emoji }}</span>
+    <span class="mbti-code">{{ code }}</span>
+    <span class="mbti-nick">{{ m.nick }}</span>
+    <p>{{ m.love }}</p>
+  </div>
+  {% endfor %}
+</div>
+<p class="mbti-note">※ MBTI 궁합은 재미로 참고하는 지표예요. 진짜 인연은 가치관과 진심에서 시작됩니다. 💛</p>
+{% endblock %}

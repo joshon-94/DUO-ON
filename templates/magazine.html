@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}연애 매거진 · 듀온{% endblock %}
+{% block content %}
+<section class="mag-hero">
+  <p class="mag-eyebrow">DUON MAGAZINE</p>
+  <h1>연애, 조금 더 지혜롭게</h1>
+  <p class="mag-lead">첫 만남부터 오래가는 관계까지. 듀온이 전하는 연애 팁과 트렌드, 그리고 MBTI 궁합 이야기.</p>
+</section>
+
+<div class="mag-tiles">
+  <a class="mag-tile" href="{{ url_for('tips') }}">
+    <span class="mag-tile-emoji">💛</span>
+    <span class="mag-tile-title">연애 팁</span>
+    <span class="mag-tile-sub">첫 만남·대화·관계의 현실 조언</span>
+  </a>
+  <a class="mag-tile" href="{{ url_for('mbti') }}">
+    <span class="mag-tile-emoji">🧩</span>
+    <span class="mag-tile-title">MBTI 궁합</span>
+    <span class="mag-tile-sub">우리 둘, 얼마나 잘 맞을까?</span>
+  </a>
+  <a class="mag-tile" href="{{ url_for('news') }}">
+    <span class="mag-tile-emoji">📰</span>
+    <span class="mag-tile-title">연애 뉴스 · 트렌드</span>
+    <span class="mag-tile-sub">요즘 만남은 이렇게 바뀌고 있어요</span>
+  </a>
+</div>
+
+<h2 class="section-title">인기 연애 팁</h2>
+<div class="tip-grid">
+  {% for t in tips %}
+  <a class="tip-card" href="{{ url_for('tip_detail', slug=t.slug) }}">
+    <span class="tip-emoji">{{ t.emoji }}</span>
+    <span class="tip-cat">{{ t.category }}</span>
+    <span class="tip-title">{{ t.title }}</span>
+    <span class="tip-summary">{{ t.summary }}</span>
+  </a>
+  {% endfor %}
+</div>
+
+<h2 class="section-title">연애 뉴스 · 트렌드</h2>
+<div class="news-list">
+  {% for n in news %}
+  <div class="news-item">
+    <span class="news-emoji">{{ n.emoji }}</span>
+    <div class="news-body">
+      <div class="news-meta"><span class="news-tag">{{ n.tag }}</span><span class="news-date">{{ n.date }}</span></div>
+      <h3>{{ n.title }}</h3>
+      <p>{{ n.summary }}</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="mag-cta">
+  <p>마음이 맞는 사람, 듀온이 직접 찾아드릴게요.</p>
+  <a class="btn" href="{{ url_for('register') }}">듀온 시작하기</a>
+</div>
+{% endblock %}

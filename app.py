@@ -22,6 +22,9 @@ from models import db, User, Like
 from questions import (
     QUESTIONS, match_score, option_label, shared_highlights
 )
+from content import (
+    TIPS, get_tip, NEWS, MBTI_INFO, MBTI_TYPES, mbti_compatibility
+)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "duon-dev-secret-change-me")
@@ -344,6 +347,44 @@ def index():
     if "user_id" in session:
         return redirect(url_for("home"))
     return render_template("index.html")
+
+
+# ---------- 연애 매거진 (공개 콘텐츠) ----------
+@app.route("/magazine")
+def magazine():
+    return render_template(
+        "magazine.html", tips=TIPS[:3], news=NEWS[:3]
+    )
+
+
+@app.route("/tips")
+def tips():
+    return render_template("tips.html", tips=TIPS)
+
+
+@app.route("/tips/<slug>")
+def tip_detail(slug):
+    tip = get_tip(slug)
+    if not tip:
+        abort(404)
+    others = [t for t in TIPS if t["slug"] != slug][:3]
+    return render_template("tip_detail.html", tip=tip, others=others)
+
+
+@app.route("/news")
+def news():
+    return render_template("news.html", news=NEWS)
+
+
+@app.route("/mbti")
+def mbti():
+    a = request.args.get("a", "")
+    b = request.args.get("b", "")
+    result = mbti_compatibility(a, b)
+    return render_template(
+        "mbti.html", info=MBTI_INFO, types=MBTI_TYPES,
+        result=result, sel_a=a.upper(), sel_b=b.upper(),
+    )
 
 
 @app.route("/register", methods=["GET", "POST"])

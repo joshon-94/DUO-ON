@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ tip.title }} · 듀온{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('tips') }}">← 연애 팁 목록</a>
+<article class="tip-article">
+  <span class="tip-cat">{{ tip.emoji }} {{ tip.category }}</span>
+  <h1>{{ tip.title }}</h1>
+  <p class="tip-article-lead">{{ tip.summary }}</p>
+  {% for para in tip.body %}
+  <p>{{ para }}</p>
+  {% endfor %}
+</article>
+
+<h2 class="section-title">다른 연애 팁</h2>
+<div class="tip-grid">
+  {% for t in others %}
+  <a class="tip-card" href="{{ url_for('tip_detail', slug=t.slug) }}">
+    <span class="tip-emoji">{{ t.emoji }}</span>
+    <span class="tip-cat">{{ t.category }}</span>
+    <span class="tip-title">{{ t.title }}</span>
+    <span class="tip-summary">{{ t.summary }}</span>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}
