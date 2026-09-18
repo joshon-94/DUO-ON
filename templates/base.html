@@ -9,6 +9,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#d96a94">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="듀온">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon-192.png') }}">
 </head>
 <body>
   <header class="topbar">
@@ -47,5 +54,13 @@
   </main>
 
   <footer class="footer">듀온 · {{ current_year }} · 가치관과 취향으로 만나는 진짜 인연</footer>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js').catch(function () {});
+      });
+    }
+  </script>
 </body>
 </html>

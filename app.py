@@ -10,7 +10,8 @@ import uuid
 from functools import wraps
 
 from flask import (
-    Flask, render_template, request, redirect, url_for, session, flash, abort
+    Flask, render_template, request, redirect, url_for, session, flash, abort,
+    send_from_directory, make_response
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -347,6 +348,24 @@ def index():
     if "user_id" in session:
         return redirect(url_for("home"))
     return render_template("index.html")
+
+
+# ---------- PWA (설치형 앱) ----------
+@app.route("/sw.js")
+def service_worker():
+    """서비스 워커는 사이트 전체(scope '/')를 제어하도록 루트에서 제공."""
+    resp = make_response(send_from_directory(app.static_folder, "sw.js"))
+    resp.headers["Content-Type"] = "application/javascript"
+    resp.headers["Service-Worker-Allowed"] = "/"
+    resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
+@app.route("/manifest.webmanifest")
+def manifest():
+    resp = make_response(send_from_directory(app.static_folder, "manifest.webmanifest"))
+    resp.headers["Content-Type"] = "application/manifest+json"
+    return resp
 
 
 # ---------- 연애 매거진 (공개 콘텐츠) ----------

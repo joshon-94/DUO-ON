@@ -1,0 +1,22 @@
+{
+  "name": "듀온 - 가치관으로 만나는 인연",
+  "short_name": "듀온",
+  "description": "가치관과 취향으로 만나는 진짜 인연. 매니저가 직접 연결해주는 소개팅 듀온.",
+  "lang": "ko",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f1e8",
+  "theme_color": "#d96a94",
+  "icons": [
+    { "src": "/static/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/static/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/static/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/static/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "연애 매거진", "url": "/magazine" },
+    { "name": "로그인", "url": "/login" }
+  ]
+}
