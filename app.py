@@ -31,7 +31,10 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "duon-dev-secret-change-me")
 
 # DB 연결: 배포 시 DATABASE_URL(PostgreSQL), 없으면 로컬 SQLite
-db_url = os.environ.get("DATABASE_URL", "sqlite:///duon.db")
+# Vercel(서버리스)은 파일시스템이 읽기 전용이라 /tmp에만 쓸 수 있다.
+# DATABASE_URL 미설정 시에도 부팅은 되도록 /tmp SQLite로 폴백(데이터는 유지 안 됨).
+_sqlite_fallback = "sqlite:////tmp/duon.db" if os.environ.get("VERCEL") else "sqlite:///duon.db"
+db_url = os.environ.get("DATABASE_URL", _sqlite_fallback)
 if db_url.startswith("postgres://"):  # Render 구형 URL 보정
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 app.config["SQLALCHEMY_DATABASE_URI"] = db_url
