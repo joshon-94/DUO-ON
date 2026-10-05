@@ -1,35 +1,36 @@
 :root {
-  /* 하이엔드 매칭: 샴페인/골드 + 웜 차콜, 정제된 미니멀 */
-  --bg: #f6f1e8;             /* 웜 크림 페이지 배경 (에디토리얼) */
+  /* 소프트 로맨틱: 밝은 블러시 크림 + 로즈 파스텔, 둥근 카드 */
+  --bg: #fdf4f3;             /* 소프트 블러시 크림 배경 */
   --serif: "Noto Serif KR", "Cormorant Garamond", "Nanum Myeongjo", Georgia, serif;
-  --cream: #fbf8f2;          /* 밝은 페이퍼 크림 */
-  --cream-2: #efe8db;
+  --cream: #fff8f6;          /* 밝은 크림(살짝 로즈) */
+  --cream-2: #fbe9ee;
   --card: #ffffff;
-  --ink: #221d18;            /* 딥 웜 차콜 */
-  --ink-2: #6a6157;
-  --muted: #9c9488;
-  --line: #ece5d8;
-  --line-strong: #ddd3c1;
-  --gold: #c2a15b;           /* 브랜드 골드 */
-  --gold-dark: #a9863f;
-  --gold-soft: #f5eeddff;
-  --gold-line: #e6d8b8;
-  --dark: #1c1814;           /* 히어로 다크 */
-  --dark-2: #2c251d;
-  --grad: linear-gradient(135deg, #c9a961 0%, #b0863d 100%);
-  --grad-soft: linear-gradient(135deg, #d9bd82 0%, #c2a15b 100%);
+  --ink: #3a2b33;            /* 웜 플럼 차콜(부드러운 텍스트) */
+  --ink-2: #7c6b73;
+  --muted: #b6a3ab;
+  --line: #f5e2e8;
+  --line-strong: #ecccd8;
+  /* 로즈 액센트 (기존 gold 변수명을 로즈로 리매핑 → 전 컴포넌트 자동 반영) */
+  --gold: #d96a94;           /* 브랜드 로즈 */
+  --gold-dark: #c15680;      /* 진한 로즈(밝은 배경 위 텍스트) */
+  --gold-soft: #fce8ef;      /* 연한 로즈 배경 */
+  --gold-line: #f4d3de;      /* 로즈 보더 */
+  --dark: #4a3540;
+  --dark-2: #5a3f4b;
+  --grad: linear-gradient(135deg, #f2a0bd 0%, #d96a94 100%);
+  --grad-soft: linear-gradient(135deg, #f6b9cd 0%, #ef9dbb 100%);
   /* 호환용 별칭 (기존 클래스가 참조) */
-  --brand: #b08842;
-  --brand-dark: #8f6c2c;
-  --brand-soft: #f5eedd;
-  --pink: #c2a15b;
-  --apricot: #c2a15b;
-  --taste: #b08842;
-  --taste-soft: #f2e9d6;
-  --radius: 16px;
-  --radius-sm: 10px;
-  --shadow: 0 4px 18px rgba(80, 60, 20, 0.05);
-  --shadow-lg: 0 22px 60px rgba(70, 52, 20, 0.16);
+  --brand: #d96a94;
+  --brand-dark: #c15680;
+  --brand-soft: #fce8ef;
+  --pink: #d96a94;
+  --apricot: #ef9dbb;
+  --taste: #d96a94;
+  --taste-soft: #fbe0e9;
+  --radius: 24px;
+  --radius-sm: 16px;
+  --shadow: 0 10px 30px rgba(217, 106, 148, 0.10);
+  --shadow-lg: 0 26px 64px rgba(217, 106, 148, 0.20);
 }
 
 * { box-sizing: border-box; }
@@ -52,7 +53,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: -0.01e
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
   padding: 22px 40px;
-  background: rgba(246,241,232,0.82);
+  background: rgba(253,244,243,0.85);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
   position: sticky; top: 0; z-index: 20;
@@ -71,10 +72,10 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: -0.01e
 .topbar nav a.btn { color: #fbf8f2; }
 .topbar nav a.btn:hover { color: #fbf8f2; }
 .topbar nav a.ghost {
-  color: var(--ink); font-weight: 500; padding: 9px 20px;
-  border: 1px solid var(--line-strong); border-radius: 4px;
+  color: var(--gold-dark); font-weight: 600; padding: 9px 20px;
+  border: 1.5px solid var(--gold-line); border-radius: 999px;
 }
-.topbar nav a.ghost:hover { border-color: var(--ink); color: var(--ink); }
+.topbar nav a.ghost:hover { background: var(--gold-soft); border-color: var(--gold); color: var(--gold-dark); }
 
 /* ===== Layout ===== */
 .container { max-width: 1080px; margin: 0 auto; padding: 40px 24px 90px; }
@@ -84,22 +85,23 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: -0.01e
 }
 .footer strong { color: var(--ink-2); font-weight: 700; }
 
-/* ===== Buttons (에디토리얼) ===== */
+/* ===== Buttons (소프트 로맨틱: 로즈 그라데이션 필) ===== */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  background: var(--ink); color: #fbf8f2;
-  border: 1px solid var(--ink); padding: 14px 30px; border-radius: 4px;
-  font-size: 14px; font-weight: 500; letter-spacing: 0.03em; cursor: pointer; transition: .2s;
-  box-shadow: none;
+  background: var(--grad); color: #fff;
+  border: none; padding: 15px 32px; border-radius: 999px;
+  font-size: 14px; font-weight: 600; letter-spacing: 0.01em; cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+  box-shadow: 0 8px 20px rgba(217, 106, 148, 0.28);
 }
-.btn:hover { background: #38312a; border-color: #38312a; text-decoration: none; }
-.btn:disabled { background: #e4ddd0; border-color: #e4ddd0; color: #b0a897; cursor: default; }
-.btn-lg { padding: 17px 38px; font-size: 15px; }
+.btn:hover { filter: brightness(1.04); box-shadow: 0 12px 26px rgba(217, 106, 148, 0.36); transform: translateY(-2px); text-decoration: none; }
+.btn:disabled { background: #f0dbe2; color: #c7aeb7; box-shadow: none; cursor: default; }
+.btn-lg { padding: 18px 40px; font-size: 15px; }
 .btn.ghost {
-  background: transparent; color: var(--ink);
-  border: 1px solid var(--line-strong); box-shadow: none;
+  background: #fff; color: var(--gold-dark);
+  border: 1.5px solid var(--gold-line); box-shadow: none;
 }
-.btn.ghost:hover { background: transparent; border-color: var(--ink); color: var(--ink); }
+.btn.ghost:hover { background: var(--gold-soft); border-color: var(--gold); color: var(--gold-dark); box-shadow: none; transform: translateY(-2px); }
 a.ghost { color: var(--muted); font-weight: 500; }
 
 /* ===== Flash ===== */
@@ -198,9 +200,9 @@ a.ghost { color: var(--muted); font-weight: 500; }
   background: var(--gold-soft); border: 1px solid var(--gold-line);
 }
 .brand-free-badge {
-  display: inline-block; margin-bottom: 12px; padding: 5px 14px; border-radius: 3px;
-  background: var(--ink); color: #fbf8f2; font-size: 12px; font-weight: 600;
-  letter-spacing: 0.14em; text-transform: uppercase;
+  display: inline-block; margin-bottom: 12px; padding: 6px 16px; border-radius: 999px;
+  background: var(--grad); color: #fff; font-size: 12px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
 }
 .brand-free p { margin: 0 0 8px; }
 .brand-free p:last-child { margin-bottom: 0; }
@@ -631,10 +633,12 @@ input:focus, textarea:focus { outline: none; border-color: var(--gold); }
 .news-body p { margin: 0; color: var(--ink-2); line-height: 1.7; }
 
 .mag-cta {
-  text-align: center; background: var(--ink); color: #fff;
-  border-radius: var(--radius); padding: 40px 30px; margin-bottom: 20px;
+  text-align: center;
+  background: linear-gradient(135deg, #fbe0e9 0%, #f6c7d8 100%);
+  color: #7a3350; border: 1px solid var(--gold-line);
+  border-radius: var(--radius); padding: 44px 30px; margin-bottom: 20px;
 }
-.mag-cta p { font-family: var(--serif); font-size: 24px; margin: 0 0 18px; }
+.mag-cta p { font-family: var(--serif); font-size: 24px; margin: 0 0 18px; color: #7a3350; }
 
 /* MBTI */
 .mbti-form { background: var(--cream); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 28px; margin-bottom: 26px; }
@@ -798,14 +802,15 @@ input:focus, textarea:focus { outline: none; border-color: var(--gold); }
 /* ===== 마무리 CTA ===== */
 .cta-band {
   margin: 104px -24px 0; padding: 96px 32px; text-align: center;
-  background: var(--ink); position: relative; overflow: hidden;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(135deg, #fbe0e9 0%, #f6c7d8 50%, #efb2c9 100%);
+  position: relative; overflow: hidden;
+  border-top: 1px solid var(--gold-line);
 }
 .cta-band > * { position: relative; z-index: 1; }
-.cta-band h2 { font-family: var(--serif); font-size: 38px; font-weight: 600; margin: 0 0 14px; color: #fbf8f2; }
-.cta-band p { color: rgba(251,248,242,0.6); font-size: 17px; margin: 0 0 34px; }
-.cta-band .btn { background: #fbf8f2; color: var(--ink); border-color: #fbf8f2; }
-.cta-band .btn:hover { background: #fff; border-color: #fff; }
+.cta-band h2 { font-family: var(--serif); font-size: 38px; font-weight: 600; margin: 0 0 14px; color: #7a3350; }
+.cta-band p { color: #a05a75; font-size: 17px; margin: 0 0 34px; }
+.cta-band .btn { background: #fff; color: var(--gold-dark); border: none; box-shadow: 0 8px 22px rgba(217,106,148,0.22); }
+.cta-band .btn:hover { background: #fff; filter: brightness(1); box-shadow: 0 12px 28px rgba(217,106,148,0.3); }
 
 @media (max-width: 900px) {
   .stats { grid-template-columns: repeat(2, 1fr); gap: 28px 20px; }

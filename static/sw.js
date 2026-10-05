@@ -1,5 +1,5 @@
 // 듀온 PWA 서비스 워커
-const CACHE = 'duon-v1';
+const CACHE = 'duon-v2';
 const SHELL = [
   '/static/style.css',
   '/static/logo.png',
@@ -38,17 +38,18 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // 정적 리소스: 캐시 우선
+  // 정적 리소스: stale-while-revalidate (빠르게 캐시 제공 + 백그라운드 최신화)
   e.respondWith(
-    caches.match(req).then((cached) =>
-      cached ||
-      fetch(req).then((res) => {
-        if (res && res.status === 200 && res.type === 'basic') {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
-        }
-        return res;
-      }).catch(() => cached)
+    caches.open(CACHE).then((cache) =>
+      cache.match(req).then((cached) => {
+        const network = fetch(req).then((res) => {
+          if (res && res.status === 200 && res.type === 'basic') {
+            cache.put(req, res.clone());
+          }
+          return res;
+        }).catch(() => cached);
+        return cached || network;
+      })
     )
   );
 });
