@@ -111,8 +111,13 @@ def ensure_admin():
 
 
 def ensure_seed():
-    """일반 회원이 한 명도 없으면 샘플 데이터를 넣어 빈 사이트 방지."""
-    if User.query.filter_by(is_admin=False).count() == 0:
+    """일반 회원이 한 명도 없으면 샘플 데이터를 넣어 빈 사이트 방지.
+
+    실서비스에서는 더미 회원이 생기면 안 되므로 SEED_SAMPLE=1 환경변수를
+    준 경우에만 동작한다(로컬 개발 기본값은 켜짐).
+    """
+    seed_enabled = os.environ.get("SEED_SAMPLE", "0" if os.environ.get("VERCEL") else "1") == "1"
+    if seed_enabled and User.query.filter_by(is_admin=False).count() == 0:
         try:
             import seed
             seed.run()
