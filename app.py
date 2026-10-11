@@ -26,6 +26,7 @@ from questions import (
 from content import (
     TIPS, get_tip, NEWS, MBTI_INFO, MBTI_TYPES, mbti_compatibility
 )
+from places import PLACES, REGIONS, CATEGORIES, get_places
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "duon-dev-secret-change-me")
@@ -401,6 +402,18 @@ def tip_detail(slug):
 @app.route("/news")
 def news():
     return render_template("news.html", news=NEWS)
+
+
+@app.route("/places")
+def places():
+    region = request.args.get("region", "")
+    cat = request.args.get("cat", "")
+    rain = request.args.get("rain") == "1"
+    items = get_places(region or None, cat or None, indoor=rain)
+    return render_template(
+        "places.html", places=items, regions=REGIONS, categories=CATEGORIES,
+        sel_region=region, sel_cat=cat, sel_rain=rain, total=len(PLACES),
+    )
 
 
 @app.route("/mbti")

@@ -841,3 +841,38 @@ input:focus, textarea:focus { outline: none; border-color: var(--gold); }
   .waiting-card { padding: 40px 22px; }
   .waiting-card h1 { font-size: 25px; }
 }
+
+/* ---------- 데이트 장소 가이드 ---------- */
+.place-filters { display: flex; flex-direction: column; gap: 10px; margin: 4px 0 28px; }
+.filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.filter-label { font-size: 12px; font-weight: 700; color: var(--muted); min-width: 32px; }
+.chip {
+  display: inline-block; padding: 7px 14px; border-radius: 999px;
+  border: 1px solid var(--line-strong); background: var(--card);
+  font-size: 13px; color: var(--ink-2); text-decoration: none;
+  transition: all .15s ease;
+}
+.chip:hover { border-color: var(--gold); color: var(--gold-dark); }
+.chip.active { background: var(--gold); border-color: var(--gold); color: #fff; font-weight: 700; }
+
+.place-count { font-size: 13px; color: var(--muted); margin: -16px 0 8px; }
+.place-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin: 8px 0 40px; }
+.place-card {
+  display: flex; flex-direction: column; gap: 8px;
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 18px; padding: 20px;
+  transition: all .15s ease;
+}
+.place-card:hover { border-color: var(--gold-line); box-shadow: var(--shadow); transform: translateY(-3px); }
+.place-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.place-cat { font-size: 12px; font-weight: 700; color: var(--gold-dark); background: var(--gold-soft); padding: 4px 10px; border-radius: 999px; }
+.place-region { font-size: 12px; color: var(--muted); }
+.place-name { font-family: var(--serif); font-size: 18px; color: var(--ink); margin: 2px 0 0; }
+.place-desc { font-size: 14px; line-height: 1.6; color: var(--ink-2); margin: 0; }
+.place-tip {
+  font-size: 13px; line-height: 1.55; color: var(--ink-2); margin: 0;
+  background: var(--cream); border-radius: 12px; padding: 10px 12px;
+}
+.place-tip strong { color: var(--gold-dark); margin-right: 4px; }
+.place-map { margin-top: auto; font-size: 13px; font-weight: 700; color: var(--gold-dark); text-decoration: none; }
+.place-map:hover { text-decoration: underline; }
