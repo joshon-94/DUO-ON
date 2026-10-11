@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}커플 여행 코스 · 듀온{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('places') }}">← 데이트 장소 가이드</a>
+<h1 class="page-title">커플 여행 코스</h1>
+<p class="page-sub">1박 2일, 2박 3일로 떠나는 국내 커플 여행. 동선·시간표·꿀팁까지 듀온이 짜둔 코스 {{ total }}개.</p>
+
+<div class="place-filters">
+  <div class="filter-row">
+    <span class="filter-label">일정</span>
+    <a class="chip {{ 'active' if not sel_length }}" href="{{ url_for('trips', region=sel_region or None) }}">전체</a>
+    {% for key, label in lengths %}
+    <a class="chip {{ 'active' if sel_length == key }}" href="{{ url_for('trips', length=key, region=sel_region or None) }}">{{ label }}</a>
+    {% endfor %}
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">지역</span>
+    <a class="chip {{ 'active' if not sel_region }}" href="{{ url_for('trips', length=sel_length or None) }}">전체</a>
+    {% for r in regions %}
+    <a class="chip {{ 'active' if sel_region == r }}" href="{{ url_for('trips', length=sel_length or None, region=r) }}">{{ r }}</a>
+    {% endfor %}
+  </div>
+</div>
+<p class="place-count">{{ trips|length }}개 코스</p>
+
+{% if trips %}
+<div class="place-grid">
+  {% for t in trips %}
+  <a class="place-card trip-card" href="{{ url_for('trip_detail', trip_id=t.id) }}">
+    <div class="place-head">
+      <span class="place-cat">{{ t.emoji }} {{ dict(lengths)[t.length] }}</span>
+      <span class="place-region">{{ t.region }}</span>
+    </div>
+    <h3 class="place-name">{{ t.title }}</h3>
+    <p class="place-desc">{{ t.summary }}</p>
+    <p class="trip-meta">🚆 {{ t.transport }}</p>
+    <span class="place-map">코스 자세히 보기 →</span>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="muted">이 조건에 맞는 코스가 아직 없어요.</p>
+{% endif %}
+
+<div class="mag-cta">
+  <p>여행 코스는 준비됐는데, 같이 떠날 사람이 없다면?</p>
+  <a class="btn" href="{{ url_for('register') }}">듀온에서 찾아보기</a>
+</div>
+{% endblock %}

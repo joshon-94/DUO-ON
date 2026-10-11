@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ trip.title }} · 듀온{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('trips') }}">← 커플 여행 코스</a>
+<p class="trip-kicker">{{ trip.emoji }} {{ lengths[trip.length] }} · {{ trip.region }}</p>
+<h1 class="page-title">{{ trip.title }}</h1>
+<p class="page-sub">{{ trip.summary }}</p>
+
+<div class="trip-info">
+  <div><strong>🚆 가는 법</strong><span>{{ trip.transport }}</span></div>
+  <div><strong>🗓️ 추천 시기</strong><span>{{ trip.season }}</span></div>
+</div>
+
+{% for day in trip.days %}
+<section class="trip-day">
+  <h2 class="trip-day-title">{{ day.title }}</h2>
+  <ol class="trip-stops">
+    {% for s in day.stops %}
+    <li class="trip-stop">
+      <span class="trip-time">{{ s.time }}</span>
+      <div class="trip-stop-body">
+        <a class="trip-stop-name" href="https://map.naver.com/p/search/{{ (s.q or s.name) | urlencode }}" target="_blank" rel="noopener">{{ s.name }}</a>
+        {% if s.desc %}<p>{{ s.desc }}</p>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endfor %}
+
+{% if trip.tips %}
+<div class="place-tip trip-tips">
+  <strong>듀온 여행 팁</strong>
+  <ul>{% for tip in trip.tips %}<li>{{ tip }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+<p class="muted trip-note">시간표는 예시예요. 운영 시간·예약·기차 시간은 출발 전에 꼭 확인하세요. 장소 이름을 누르면 네이버 지도로 연결돼요.</p>
+
+<div class="mag-cta">
+  <p>이 코스, 같이 갈 사람을 찾고 있나요?</p>
+  <a class="btn" href="{{ url_for('register') }}">듀온에서 찾아보기</a>
+</div>
+{% endblock %}

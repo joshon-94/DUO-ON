@@ -26,7 +26,8 @@ from questions import (
 from content import (
     TIPS, get_tip, NEWS, MBTI_INFO, MBTI_TYPES, mbti_compatibility
 )
-from places import PLACES, REGIONS, CATEGORIES, get_places
+from places import PLACES, REGIONS, CATEGORIES, SUBS, get_places
+from trips import TRIPS, LENGTHS, get_trips, get_trip
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "duon-dev-secret-change-me")
@@ -408,12 +409,34 @@ def news():
 def places():
     region = request.args.get("region", "")
     cat = request.args.get("cat", "")
+    sub = request.args.get("sub", "")
     rain = request.args.get("rain") == "1"
-    items = get_places(region or None, cat or None, indoor=rain)
+    items = get_places(region or None, cat or None, indoor=rain, sub=sub or None)
     return render_template(
         "places.html", places=items, regions=REGIONS, categories=CATEGORIES,
-        sel_region=region, sel_cat=cat, sel_rain=rain, total=len(PLACES),
+        subs=SUBS, sel_region=region, sel_cat=cat, sel_sub=sub, sel_rain=rain,
+        total=len(PLACES),
     )
+
+
+@app.route("/trips")
+def trips():
+    length = request.args.get("length", "")
+    region = request.args.get("region", "")
+    items = get_trips(length or None, region or None)
+    trip_regions = [r for r in REGIONS if any(t["region"] == r for t in TRIPS)]
+    return render_template(
+        "trips.html", trips=items, lengths=LENGTHS, regions=trip_regions,
+        sel_length=length, sel_region=region, total=len(TRIPS),
+    )
+
+
+@app.route("/trips/<trip_id>")
+def trip_detail(trip_id):
+    trip = get_trip(trip_id)
+    if not trip:
+        abort(404)
+    return render_template("trip_detail.html", trip=trip, lengths=dict(LENGTHS))
 
 
 @app.route("/mbti")
