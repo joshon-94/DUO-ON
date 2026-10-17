@@ -4,6 +4,7 @@
 배포(Render): gunicorn app:app  (DATABASE_URL 환경변수로 PostgreSQL 사용)
 """
 import datetime
+import hashlib
 import json
 import os
 import uuid
@@ -309,10 +310,16 @@ def collect_photos(form, files):
     return result, None
 
 
+# 정적 파일 캐시 무효화용 버전: style.css 내용이 바뀌면 URL도 바뀐다
+with open(os.path.join(app.static_folder, "style.css"), "rb") as _f:
+    ASSET_VERSION = hashlib.md5(_f.read()).hexdigest()[:8]
+
+
 @app.context_processor
 def inject_globals():
     return {"me": current_user(), "current_year": CURRENT_YEAR,
-            "photo_for": photo_for, "cloudinary_enabled": CLOUDINARY_ENABLED}
+            "photo_for": photo_for, "cloudinary_enabled": CLOUDINARY_ENABLED,
+            "asset_v": ASSET_VERSION}
 
 
 @app.template_filter("age")
