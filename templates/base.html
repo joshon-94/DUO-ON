@@ -7,6 +7,22 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  {# 공유 미리보기 (카카오톡·인스타·페이스북·X) — 페이지별로 og_title / og_desc / og_image 블록을 덮어쓴다 #}
+  <meta name="description" content="{% block og_desc %}가치관과 취향이 맞는 사람을 먼저 소개하는 소개팅 플랫폼 듀온. 데이트 장소, 여행 코스, 오늘의 연애운까지.{% endblock %}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="듀온 Duon">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:title" content="{% block og_title %}듀온 · 가치관으로 만나는 인연{% endblock %}">
+  <meta property="og:description" content="{{ self.og_desc() }}">
+  <meta property="og:url" content="{{ site_url }}{{ request.full_path.rstrip('?') }}">
+  <meta property="og:image" content="{{ site_url }}{{ url_for('static', filename='og/' ~ self.og_image().strip() ~ '.png') }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ self.og_title() }}">
+  <meta name="twitter:description" content="{{ self.og_desc() }}">
+  <meta name="twitter:image" content="{{ site_url }}{{ url_for('static', filename='og/' ~ self.og_image().strip() ~ '.png') }}">
+  {% if false %}{% block og_image %}default{% endblock %}{% endif %}
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=asset_v) }}">
   <link rel="manifest" href="/manifest.webmanifest">
@@ -60,7 +76,7 @@
     <a class="tab {{ 'on' if ep in ('magazine', 'tips', 'tip_detail', 'news', 'mbti') }}" href="{{ url_for('magazine') }}">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M8 8h6M8 12h6"/></svg><span>매거진</span>
     </a>
-    <a class="tab {{ 'on' if ep in ('places', 'trips', 'trip_detail') }}" href="{{ url_for('places') }}">
+    <a class="tab {{ 'on' if ep in ('places', 'places_saved', 'random_pick', 'trips', 'trip_detail') }}" href="{{ url_for('places') }}">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>데이트</span>
     </a>
     <a class="tab {{ 'on' if ep == 'fortune' }}" href="{{ url_for('fortune') }}">
@@ -92,6 +108,7 @@
 
   <script src="{{ url_for('static', filename='js/img-compress.js') }}"></script>
   <script src="{{ url_for('static', filename='js/motion.js', v=asset_v) }}" defer></script>
+  <script src="{{ url_for('static', filename='js/saved.js', v=asset_v) }}" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {

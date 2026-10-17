@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}오늘 뭐 하지? 랜덤 데이트 코스 · 듀온{% endblock %}
+{% block og_title %}오늘 뭐 하지? 랜덤 데이트 코스 · 듀온{% endblock %}
+{% block og_desc %}고민은 그만! 버튼 한 번에 놀거리 · 맛집 · 카페를 같은 동네에서 골라드려요.{% endblock %}
+{% block og_image %}random{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('places') }}">← 데이트 장소 가이드</a>
+<h1 class="page-title">🎲 오늘 뭐 하지?</h1>
+<p class="page-sub">고민은 그만! 같은 동네에서 놀거리 · 맛집 · 카페를 하나씩 골라 데이트 코스를 만들어 드려요.</p>
+
+<div class="place-filters">
+  <div class="filter-row">
+    <span class="filter-label">지역</span>
+    <a class="chip {{ 'active' if not sel_region }}" href="{{ url_for('random_pick') }}">아무 데나</a>
+    {% for r in regions %}
+    <a class="chip {{ 'active' if sel_region == r }}" href="{{ url_for('random_pick', region=r) }}">{{ r }}</a>
+    {% endfor %}
+  </div>
+</div>
+
+<section class="course" id="course">
+  <p class="course-region"><span>📍</span> 오늘의 동네는 <strong>{{ picked_region }}</strong></p>
+  <ol class="course-steps">
+    {% for c in course %}
+    {% set p = c.place %}
+    <li class="course-step" style="--i: {{ loop.index0 }}">
+      <span class="course-num">{{ loop.index }}</span>
+      <div class="course-body">
+        <span class="course-label">{{ c.label }} · {{ p.area }}</span>
+        <h3 class="place-name">{{ p.name }}</h3>
+        <p class="place-desc">{{ p.desc }}</p>
+        <div class="place-foot">
+          <a class="place-map" href="https://map.naver.com/p/search/{{ (p.q or p.name) | urlencode }}" target="_blank" rel="noopener">지도 보기 →</a>
+          <button class="save-btn" type="button" data-save="{{ p.id }}" aria-pressed="false" aria-label="{{ p.name }} 찜하기">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z"/></svg>
+            <span>찜</span>
+          </button>
+        </div>
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+  <div class="course-actions">
+    <a class="btn reroll" href="{{ url_for('random_pick', region=sel_region or None, r=range(1, 99999)|random, _anchor='course') }}">🎲 다시 뽑기</a>
+    <a class="chip" href="{{ url_for('places_saved') }}">♥ 찜한 곳 보기</a>
+  </div>
+</section>
+
+<div class="mag-cta">
+  <p>코스는 정해졌는데, 같이 갈 사람이 없다면?</p>
+  <a class="btn" href="{{ url_for('register') }}">듀온에서 찾아보기</a>
+</div>
+{% endblock %}

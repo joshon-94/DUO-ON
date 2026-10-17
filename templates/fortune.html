@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% block title %}오늘의 연애운 + 타로 · 듀온{% endblock %}
+{% block og_title %}{% if love %}{{ love.name }} 오늘의 연애운 {{ "♥" * love.score }}{% else %}오늘의 연애운 + 타로{% endif %} · 듀온{% endblock %}
+{% block og_desc %}{% if love %}{{ love.message }}{% else %}12별자리 오늘의 연애운과 하루 한 장 연애 타로. 오늘의 행운 데이트 장소까지 확인해 보세요.{% endif %}{% endblock %}
+{% block og_image %}fortune{% endblock %}
 {% block content %}
 <a class="back-link" href="{{ url_for('magazine') }}">← 연애 매거진</a>
 <h1 class="page-title">오늘의 연애운 + 타로</h1>

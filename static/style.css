@@ -1188,3 +1188,83 @@ input:focus, textarea:focus { outline: none; border-color: var(--gold); }
   .page-enter, .btn::after, .tarot-backs span, .tarot-face, .tarot-emoji, .logo .logo-o circle,
   .fortune-place::before, .chip.active, .zodiac-chip.active, .tabbar { animation: none !important; }
 }
+
+/* ---------- 찜하기 · 오늘 뭐 하지? ---------- */
+.place-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.place-foot .place-map { margin-top: 0; }
+.save-btn {
+  position: relative; display: inline-flex; align-items: center; gap: 4px;
+  padding: 6px 12px 6px 9px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line-strong); background: var(--card); color: var(--ink-2);
+  font: inherit; font-size: 12px; font-weight: 700; transition: all .2s ease;
+}
+.save-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; transition: transform .25s; }
+.save-btn:hover { border-color: var(--gold); color: var(--gold-dark); }
+.save-btn.on { background: var(--gold-soft); border-color: var(--gold); color: var(--gold-dark); }
+.save-btn.on svg { fill: var(--gold); stroke: var(--gold); }
+.save-btn.burst svg { animation: heartBeat .5s cubic-bezier(.34,1.56,.64,1); }
+@keyframes heartBeat { 0% { transform: scale(1); } 40% { transform: scale(1.45); } 100% { transform: scale(1); } }
+.mini-heart {
+  position: absolute; left: 16px; top: 50%; font-style: normal; font-size: 11px; color: var(--gold);
+  pointer-events: none; animation: miniHeart .7s ease-out forwards;
+}
+@keyframes miniHeart {
+  from { transform: translate(-50%, -50%) rotate(var(--a)) translateY(0) scale(.6); opacity: 1; }
+  to   { transform: translate(-50%, -50%) rotate(var(--a)) translateY(-26px) scale(1); opacity: 0; }
+}
+.place-card.leaving { transition: opacity .3s, transform .3s; opacity: 0; transform: scale(.94); }
+
+.place-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: -6px 0 12px; }
+.action-pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 999px;
+  background: var(--card); border: 1px solid var(--gold-line); color: var(--gold-dark);
+  font-size: 14px; font-weight: 700; text-decoration: none; transition: all .2s;
+}
+.action-pill:hover { background: var(--gold-soft); transform: translateY(-1px); }
+.action-pill:active { transform: scale(.96); }
+.action-pill .dice { display: inline-block; animation: diceWiggle 2.8s ease-in-out infinite; }
+@keyframes diceWiggle { 0%, 80%, 100% { transform: rotate(0); } 85% { transform: rotate(-18deg); } 90% { transform: rotate(16deg); } 95% { transform: rotate(-8deg); } }
+.saved-count {
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--gold); color: #fff;
+  font-size: 11px; display: inline-flex; align-items: center; justify-content: center;
+}
+.saved-count[hidden] { display: none; }
+
+.saved-empty { text-align: center; padding: 48px 20px; background: var(--card); border: 1px dashed var(--gold-line); border-radius: 20px; margin-bottom: 32px; }
+.saved-empty-heart { font-size: 48px; color: var(--gold); display: inline-block; animation: floaty 3s ease-in-out infinite; }
+.saved-empty p { color: var(--ink-2); margin: 10px 0 20px; line-height: 1.7; }
+.saved-empty-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; align-items: center; }
+
+/* 랜덤 코스: 슬롯처럼 하나씩 떨어진다 */
+.course { margin: 0 0 36px; }
+.course-region { font-size: 16px; color: var(--ink-2); margin: 0 0 14px; animation: pageIn .5s both; }
+.course-region strong { font-family: var(--serif); font-size: 22px; color: var(--gold-dark); margin-left: 4px; }
+.course-steps { list-style: none; margin: 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.course-step {
+  display: flex; gap: 14px; align-items: flex-start; padding: 18px; border-radius: 20px;
+  background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow);
+  animation: slotDrop .7s cubic-bezier(.34,1.4,.64,1) both; animation-delay: calc(.2s + var(--i) * .28s);
+}
+@keyframes slotDrop {
+  0% { opacity: 0; transform: translateY(-40px) rotateX(70deg); filter: blur(4px); }
+  60% { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: none; }
+}
+.course-num {
+  flex: 0 0 34px; height: 34px; border-radius: 50%; background: var(--grad); color: #fff;
+  font-weight: 800; display: flex; align-items: center; justify-content: center;
+}
+.course-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.course-label { font-size: 12px; font-weight: 700; color: var(--gold-dark); }
+.course-body .place-name { margin: 0; }
+.course-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.reroll:active { transform: scale(.94) rotate(-2deg); }
+
+@media (max-width: 760px) {
+  .place-actions { margin-top: 0; }
+  .action-pill { flex: 1; justify-content: center; padding: 11px 12px; font-size: 13px; }
+  .course-step { padding: 16px 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .course-step, .course-region, .action-pill .dice, .saved-empty-heart, .save-btn.burst svg { animation: none !important; }
+}

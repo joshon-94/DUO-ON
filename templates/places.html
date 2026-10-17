@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% block title %}데이트 장소 가이드 · 듀온{% endblock %}
+{% block og_title %}데이트 장소 가이드 156곳 · 듀온{% endblock %}
+{% block og_desc %}전국 10개 지역 데이트 코스 · 소개팅 장소 · 맛집(한식·일식·양식·중식) · 카페 · 액티비티. 실패 없는 데이트 스팟 모음.{% endblock %}
+{% block og_image %}places{% endblock %}
 {% macro link(region=sel_region, cat=sel_cat, sub=sel_sub, rain=sel_rain) -%}
 {{ url_for('places', region=region or None, cat=cat or None, sub=sub or None, rain=1 if rain else None) }}
 {%- endmacro %}
@@ -7,6 +10,10 @@
 <a class="back-link" href="{{ url_for('magazine') }}">← 연애 매거진</a>
 <h1 class="page-title">데이트 장소 가이드</h1>
 <p class="page-sub">지역별 데이트 코스부터 소개팅 장소, 맛집, 카페, 액티비티까지. 듀온이 직접 고른 실패 없는 스팟 {{ total }}곳.</p>
+<div class="place-actions">
+  <a class="action-pill" href="{{ url_for('random_pick', region=sel_region or None) }}"><span class="dice">🎲</span> 오늘 뭐 하지?</a>
+  <a class="action-pill" href="{{ url_for('places_saved') }}"><span>♥</span> 찜한 곳 <b class="saved-count" hidden>0</b></a>
+</div>
 <a class="trip-banner" href="{{ url_for('trips') }}">🧳 하루로는 아쉽다면? <strong>1박 2일 · 2박 3일 커플 여행 코스 보기 →</strong></a>
 
 <div class="place-filters">
@@ -43,18 +50,7 @@
 {% if places %}
 <div class="place-grid">
   {% for p in places %}
-  <article class="place-card">
-    <div class="place-head">
-      {% for key, label, emoji, _ in categories if key == p.cat %}
-      <span class="place-cat">{{ emoji }} {{ label }}{% for skey, slabel, _ in subs.get(p.cat, []) if skey == p.sub %} · {{ slabel }}{% endfor %}</span>
-      {% endfor %}
-      <span class="place-region">{% if p.indoor %}☔ 실내 · {% endif %}{{ p.region }} · {{ p.area }}</span>
-    </div>
-    <h3 class="place-name">{{ p.name }}</h3>
-    <p class="place-desc">{{ p.desc }}</p>
-    <p class="place-tip"><strong>듀온 팁</strong> {{ p.tip }}</p>
-    <a class="place-map" href="https://map.naver.com/p/search/{{ (p.q or p.name) | urlencode }}" target="_blank" rel="noopener">네이버 지도에서 보기 →</a>
-  </article>
+  {% include "_place_card.html" %}
   {% endfor %}
 </div>
 {% else %}

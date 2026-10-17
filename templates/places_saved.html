@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}찜한 데이트 장소 · 듀온{% endblock %}
+{% block og_title %}찜한 데이트 장소 · 듀온{% endblock %}
+{% block og_image %}places{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('places') }}">← 데이트 장소 가이드</a>
+<h1 class="page-title">♥ 찜한 데이트 장소</h1>
+<p class="page-sub">마음에 드는 곳에 하트를 눌러 모아두세요. 찜 목록은 지금 쓰는 기기(브라우저)에 저장돼요.</p>
+
+<div class="place-grid" id="saved-grid" aria-live="polite"></div>
+<div class="saved-empty" id="saved-empty" hidden>
+  <span class="saved-empty-heart">♡</span>
+  <p>아직 찜한 장소가 없어요.<br>데이트 장소 가이드에서 하트를 눌러보세요!</p>
+  <div class="saved-empty-actions">
+    <a class="btn" href="{{ url_for('places') }}">데이트 장소 보러 가기</a>
+    <a class="chip" href="{{ url_for('random_pick') }}">🎲 오늘 뭐 하지?</a>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var grid = document.getElementById('saved-grid');
+  var empty = document.getElementById('saved-empty');
+  var ids = window.DuonSaved ? DuonSaved.list() : [];
+  if (!ids.length) { empty.hidden = false; return; }
+  // 최근에 찜한 순서대로
+  fetch('{{ url_for("place_cards") }}?ids=' + ids.slice().reverse().join(','))
+    .then(function (r) { return r.text(); })
+    .then(function (html) {
+      grid.innerHTML = html;
+      if (!grid.children.length) { empty.hidden = false; return; }
+      if (window.DuonSaved) DuonSaved.bind(grid);
+    })
+    .catch(function () { empty.hidden = false; });
+  // 찜 해제하면 카드가 사라진다
+  document.addEventListener('duon:saved-change', function (e) {
+    if (e.detail.saved) return;
+    var card = grid.querySelector('[data-place="' + e.detail.id + '"]');
+    if (!card) return;
+    card.classList.add('leaving');
+    setTimeout(function () {
+      card.remove();
+      if (!grid.children.length) empty.hidden = false;
+    }, 320);
+  });
+});
+</script>
+{% endblock %}

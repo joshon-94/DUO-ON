@@ -5,6 +5,9 @@
 각 장소는 네이버 지도 검색 링크로 연결해 최신 정보를 보게 한다.
 """
 
+import hashlib
+import random
+
 # (key, 라벨, 이모지, 한 줄 설명)
 CATEGORIES = [
     ("date", "데이트 필수 코스", "💕", "걷고 보고 즐기는, 실패 없는 데이트 스팟"),
@@ -1092,6 +1095,42 @@ PLACES += [
         "q": "강릉 로스터리",
     },
 ]
+
+
+# 찜하기용 고정 id: 장소명 해시 (목록 순서가 바뀌어도 유지)
+for _p in PLACES:
+    _p["id"] = hashlib.md5(_p["name"].encode("utf-8")).hexdigest()[:8]
+PLACE_BY_ID = {p["id"]: p for p in PLACES}
+
+
+def places_by_ids(ids):
+    """id 목록 순서대로 장소를 돌려준다 (없는 id는 건너뜀)."""
+    return [PLACE_BY_ID[i] for i in ids if i in PLACE_BY_ID]
+
+
+def random_course(region=None, rng=random):
+    """오늘 뭐 하지? — 같은 지역에서 놀거리 1 + 맛집 1 + 카페 1을 뽑는다.
+
+    region이 없으면 세 종류가 모두 있는 지역 중에서 고른다.
+    """
+    def pool(r, cats):
+        return [p for p in PLACES if p["region"] == r and p["cat"] in cats]
+
+    steps = [
+        ("play", "놀거리", ("date", "activity")),
+        ("food", "맛집", ("food",)),
+        ("cafe", "카페", ("cafe",)),
+    ]
+    regions = [region] if region in REGIONS else [
+        r for r in REGIONS if all(pool(r, cats) for _, _, cats in steps)
+    ]
+    region = rng.choice(regions)
+    course = []
+    for key, label, cats in steps:
+        cands = pool(region, cats)
+        if cands:
+            course.append({"step": key, "label": label, "place": rng.choice(cands)})
+    return region, course
 
 
 def get_places(region=None, cat=None, indoor=False, sub=None):

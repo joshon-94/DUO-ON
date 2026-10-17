@@ -27,7 +27,9 @@ from questions import (
 from content import (
     TIPS, get_tip, NEWS, MBTI_INFO, MBTI_TYPES, mbti_compatibility
 )
-from places import PLACES, REGIONS, CATEGORIES, SUBS, get_places
+from places import (
+    PLACES, REGIONS, CATEGORIES, SUBS, get_places, places_by_ids, random_course
+)
 from trips import TRIPS, LENGTHS, get_trips, get_trip
 from fortune import (
     ZODIAC, daily_love, ranking, draw_tarot, tarot_card, today_kst
@@ -310,9 +312,12 @@ def collect_photos(form, files):
     return result, None
 
 
+# 공유 미리보기(og:url / og:image)에 쓰는 절대 주소
+SITE_URL = os.environ.get("SITE_URL", "https://duo-on.vercel.app").rstrip("/")
+
 # 정적 파일 캐시 무효화용 버전: style.css / motion.js 내용이 바뀌면 URL도 바뀐다
 _asset_hash = hashlib.md5()
-for _name in ("style.css", "js/motion.js"):
+for _name in ("style.css", "js/motion.js", "js/saved.js"):
     with open(os.path.join(app.static_folder, _name), "rb") as _f:
         _asset_hash.update(_f.read())
 ASSET_VERSION = _asset_hash.hexdigest()[:8]
@@ -322,7 +327,7 @@ ASSET_VERSION = _asset_hash.hexdigest()[:8]
 def inject_globals():
     return {"me": current_user(), "current_year": CURRENT_YEAR,
             "photo_for": photo_for, "cloudinary_enabled": CLOUDINARY_ENABLED,
-            "asset_v": ASSET_VERSION}
+            "asset_v": ASSET_VERSION, "site_url": SITE_URL}
 
 
 @app.template_filter("age")
@@ -455,6 +460,32 @@ def places():
         "places.html", places=items, regions=REGIONS, categories=CATEGORIES,
         subs=SUBS, sel_region=region, sel_cat=cat, sel_sub=sub, sel_rain=rain,
         total=len(PLACES),
+    )
+
+
+@app.route("/places/saved")
+def places_saved():
+    """찜한 장소. 목록은 브라우저(localStorage)에 있고, 카드는 /places/cards로 받아온다."""
+    return render_template("places_saved.html", categories=CATEGORIES, subs=SUBS)
+
+
+@app.route("/places/cards")
+def place_cards():
+    """찜 목록용 카드 HTML 조각. ?ids=a1b2c3d4,e5f6..."""
+    ids = [i for i in request.args.get("ids", "").split(",") if i][:200]
+    return render_template(
+        "_place_cards.html", places=places_by_ids(ids), categories=CATEGORIES, subs=SUBS,
+    )
+
+
+@app.route("/random")
+def random_pick():
+    """오늘 뭐 하지? 랜덤 데이트 코스."""
+    region = request.args.get("region", "")
+    picked_region, course = random_course(region or None)
+    return render_template(
+        "random.html", regions=REGIONS, sel_region=region,
+        picked_region=picked_region, course=course, categories=CATEGORIES, subs=SUBS,
     )
 
 

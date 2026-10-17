@@ -1,0 +1,18 @@
+<article class="place-card" data-place="{{ p.id }}">
+  <div class="place-head">
+    {% for key, label, emoji, _ in categories if key == p.cat %}
+    <span class="place-cat">{{ emoji }} {{ label }}{% for skey, slabel, _ in subs.get(p.cat, []) if skey == p.sub %} · {{ slabel }}{% endfor %}</span>
+    {% endfor %}
+    <span class="place-region">{% if p.indoor %}☔ 실내 · {% endif %}{{ p.region }} · {{ p.area }}</span>
+  </div>
+  <h3 class="place-name">{{ p.name }}</h3>
+  <p class="place-desc">{{ p.desc }}</p>
+  <p class="place-tip"><strong>듀온 팁</strong> {{ p.tip }}</p>
+  <div class="place-foot">
+    <a class="place-map" href="https://map.naver.com/p/search/{{ (p.q or p.name) | urlencode }}" target="_blank" rel="noopener">네이버 지도에서 보기 →</a>
+    <button class="save-btn" type="button" data-save="{{ p.id }}" aria-pressed="false" aria-label="{{ p.name }} 찜하기">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z"/></svg>
+      <span>찜</span>
+    </button>
+  </div>
+</article>
