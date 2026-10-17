@@ -1002,3 +1002,189 @@ input:focus, textarea:focus { outline: none; border-color: var(--gold); }
 @media (max-width: 520px) {
   .tarot-face { flex-basis: 100%; min-height: 160px; }
 }
+
+/* =====================================================
+   모션 & 모바일 앱 UI (2026-10 리뉴얼)
+   ===================================================== */
+
+/* ---- 페이지 진입 ---- */
+.page-enter { animation: pageIn .55s cubic-bezier(.22,.61,.36,1) both; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* ---- 스크롤 등장 (motion.js가 .rv / .rv-in 부여) ---- */
+.motion .rv {
+  opacity: 0; transform: translateY(18px) scale(.985);
+  transition: opacity .6s cubic-bezier(.22,.61,.36,1), transform .6s cubic-bezier(.22,.61,.36,1),
+              box-shadow .18s, border-color .18s;
+  transition-delay: var(--rv-delay, 0ms), var(--rv-delay, 0ms), 0s, 0s;
+}
+.motion .rv.rv-in { opacity: 1; transform: none; }
+.motion .rv.rv-in:hover { transition-delay: 0s; }
+
+/* ---- 버튼: 반짝이는 하이라이트 + 눌림 ---- */
+.btn { position: relative; overflow: hidden; isolation: isolate; }
+.btn::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.38) 50%, transparent 70%);
+  transform: translateX(-120%); animation: shine 4.2s ease-in-out 1.2s infinite;
+}
+@keyframes shine { 0%, 70% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+.btn:active { transform: scale(.96); }
+
+/* ---- 탭 리플 ---- */
+.chip, .tab, .zodiac-chip { position: relative; overflow: hidden; }
+.ripple {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  background: rgba(217,106,148,.22); transform: scale(0); animation: ripple .6s ease-out forwards;
+}
+.btn .ripple { background: rgba(255,255,255,.35); }
+@keyframes ripple { to { transform: scale(2.4); opacity: 0; } }
+
+/* ---- 카드 눌림 피드백 (모바일 탭) ---- */
+.place-card:active, .mag-tile:active, .trip-card:active, .fortune-rank a:active,
+.zodiac-chip:active, .chip:active { transform: scale(.97); }
+
+/* ---- 칩 활성화 팝 ---- */
+.chip.active, .zodiac-chip.active { animation: pop .35s cubic-bezier(.34,1.56,.64,1); }
+@keyframes pop { 0% { transform: scale(.9); } 100% { transform: scale(1); } }
+
+/* ---- 로고 링: 두 원이 살짝 숨 쉬듯 ---- */
+.logo .logo-o circle:first-child { animation: ringL 3.2s ease-in-out infinite; transform-origin: 17px 15px; }
+.logo .logo-o circle:last-child { animation: ringR 3.2s ease-in-out infinite; transform-origin: 29px 15px; }
+@keyframes ringL { 0%,100% { transform: translateX(0); } 50% { transform: translateX(1.6px); } }
+@keyframes ringR { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-1.6px); } }
+
+/* ---- 연애운: 하트 순차 점등 ---- */
+.motion .fortune-hearts .heart { display: inline-block; opacity: 0; animation: heartIn .45s cubic-bezier(.34,1.56,.64,1) forwards; }
+.motion .fortune-hearts .heart.full { animation-name: heartFull; }
+@keyframes heartIn { from { opacity: 0; transform: scale(.4); } to { opacity: .45; transform: none; } }
+@keyframes heartFull { 0% { opacity: 0; transform: scale(.3); } 60% { opacity: 1; transform: scale(1.35); } 100% { opacity: 1; transform: none; } }
+.fortune-lucky > div { transition: transform .2s; }
+.fortune-lucky > div:hover { transform: translateY(-2px); }
+.fortune-place { position: relative; overflow: hidden; }
+.fortune-place::before {
+  content: "✦"; position: absolute; right: 14px; top: 10px; color: var(--gold);
+  animation: twinkle 2.4s ease-in-out infinite;
+}
+@keyframes twinkle { 0%,100% { opacity: .2; transform: scale(.8) rotate(0); } 50% { opacity: 1; transform: scale(1.2) rotate(20deg); } }
+
+/* ---- 타로: 카드 뒷면 둥실 + 결과 카드 뒤집기 ---- */
+.tarot-backs span { animation: floatCard 3s ease-in-out infinite; }
+.tarot-backs span:nth-child(1) { --r: -8deg; animation-delay: .2s; }
+.tarot-backs span:nth-child(2) { --r: 0deg; animation-delay: .5s; }
+.tarot-backs span:nth-child(3) { --r: 8deg; animation-delay: .8s; }
+@keyframes floatCard { 0%,100% { transform: translateY(0) rotate(var(--r)); } 50% { transform: translateY(-8px) rotate(var(--r)); } }
+.tarot-backs span::after {
+  content: "✦"; display: flex; align-items: center; justify-content: center; height: 100%;
+  color: rgba(255,255,255,.85); font-size: 22px;
+}
+.tarot-face { animation: flipIn .9s cubic-bezier(.22,.61,.36,1) .15s both; transform-origin: center; }
+@keyframes flipIn {
+  0% { transform: perspective(700px) rotateY(180deg) scale(.9); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: perspective(700px) rotateY(0) scale(1); opacity: 1; }
+}
+.tarot-emoji { animation: floaty 3.4s ease-in-out 1.1s infinite; display: inline-block; }
+
+/* ---- 트립 타임라인 점: 등장 시 톡 ---- */
+.motion .trip-day.rv-in .trip-stop::before { animation: dotPop .5s cubic-bezier(.34,1.56,.64,1) both; }
+.motion .trip-day.rv-in .trip-stop:nth-child(2)::before { animation-delay: .1s; }
+.motion .trip-day.rv-in .trip-stop:nth-child(3)::before { animation-delay: .2s; }
+.motion .trip-day.rv-in .trip-stop:nth-child(4)::before { animation-delay: .3s; }
+.motion .trip-day.rv-in .trip-stop:nth-child(5)::before { animation-delay: .4s; }
+@keyframes dotPop { from { transform: scale(0); } to { transform: scale(1); } }
+
+/* ---- 하단 탭바 (모바일 전용) ---- */
+.tabbar { display: none; }
+@keyframes tabbarIn { from { transform: translateY(120%); } to { transform: none; } }
+
+@media (max-width: 760px) {
+  /* 상단바: 로고 + 시작하기/로그아웃만 */
+  .has-tabbar .topbar { padding: 12px 16px; padding-top: calc(12px + env(safe-area-inset-top)); }
+  .has-tabbar .topbar nav { gap: 8px; }
+  .has-tabbar .topbar nav a:not(.btn):not(.ghost) { display: none; }
+  .topbar nav a.btn { padding: 9px 18px; font-size: 13px; box-shadow: 0 6px 14px rgba(217,106,148,.25); }
+  .topbar nav a.ghost { padding: 7px 14px; font-size: 13px; }
+  .logo { font-size: 26px; white-space: nowrap; flex: 0 0 auto; }
+  .logo .logo-o { width: 30px; height: 20px; }
+
+  /* 관리자: 메뉴를 가로 스크롤로 */
+  .is-admin .topbar { gap: 12px; padding: 12px 16px; }
+  .is-admin .topbar nav { overflow-x: auto; gap: 16px; scrollbar-width: none; white-space: nowrap; }
+  .is-admin .topbar nav::-webkit-scrollbar { display: none; }
+
+  .tabbar {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 40;
+    background: rgba(255,255,255,.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--line); border-radius: 22px; padding: 6px;
+    box-shadow: 0 12px 34px rgba(122,51,80,.16);
+    animation: tabbarIn .5s cubic-bezier(.22,.61,.36,1) .1s both;
+  }
+  .tab {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 7px 0 5px; border-radius: 16px; color: var(--muted);
+    font-size: 11px; font-weight: 600; transition: color .2s, background .2s;
+  }
+  .tab svg {
+    width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8;
+    stroke-linecap: round; stroke-linejoin: round; transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+  }
+  .tab.on { color: var(--gold-dark); background: var(--gold-soft); }
+  .tab.on svg { transform: translateY(-1px) scale(1.1); fill: rgba(217,106,148,.18); }
+  .has-tabbar .container { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
+  .has-tabbar .footer { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
+
+  /* 공통 타이포 */
+  .page-title { font-size: 27px; line-height: 1.3; }
+  .page-sub { font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+  .section-title { font-size: 19px; }
+  .mag-hero { padding: 28px 22px; }
+  .mag-hero h1 { font-size: 28px; }
+  .mag-cta { border-radius: 20px; }
+  .mag-cta p { font-size: 19px; }
+
+  /* 매거진 타일: 2열 앱 아이콘 느낌 */
+  .mag-tiles { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .mag-tile { padding: 18px 16px; border-radius: 20px; }
+  .mag-tile-emoji { font-size: 26px; }
+  .mag-tile-title { font-size: 15px; }
+  .mag-tile-sub { font-size: 12px; line-height: 1.45; }
+
+  /* 필터 칩: 줄바꿈 대신 가로 스와이프 */
+  .place-filters { gap: 8px; margin-bottom: 20px; }
+  .filter-row {
+    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+    margin: 0 -18px; padding: 2px 18px;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 24px), transparent 100%);
+            mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 24px), transparent 100%);
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .chip { flex: 0 0 auto; padding: 8px 14px; }
+  .filter-label { flex: 0 0 auto; min-width: 0; }
+  .sub-row { border-left: none; }
+  .trip-banner { margin-top: 0; font-size: 13px; }
+
+  /* 카드 리스트 */
+  .place-grid { grid-template-columns: 1fr; gap: 12px; }
+  .place-card { padding: 18px; border-radius: 20px; }
+  .place-card:hover { transform: none; }
+
+  /* 연애운 */
+  .zodiac-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .zodiac-chip { padding: 10px 2px; border-radius: 14px; }
+  .zodiac-period { font-size: 9.5px; letter-spacing: -.02em; }
+  .zodiac-name { font-size: 12px; }
+  .fortune-card, .tarot-result { padding: 20px 18px; border-radius: 20px; }
+  .fortune-lucky { grid-template-columns: repeat(2, 1fr); }
+  .fortune-rank { grid-template-columns: 1fr; }
+
+  /* 여행 코스 */
+  .trip-info { grid-template-columns: 1fr; }
+  .trip-time { flex-basis: 42px; font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter, .btn::after, .tarot-backs span, .tarot-face, .tarot-emoji, .logo .logo-o circle,
+  .fortune-place::before, .chip.active, .zodiac-chip.active, .tabbar { animation: none !important; }
+}

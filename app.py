@@ -310,9 +310,12 @@ def collect_photos(form, files):
     return result, None
 
 
-# 정적 파일 캐시 무효화용 버전: style.css 내용이 바뀌면 URL도 바뀐다
-with open(os.path.join(app.static_folder, "style.css"), "rb") as _f:
-    ASSET_VERSION = hashlib.md5(_f.read()).hexdigest()[:8]
+# 정적 파일 캐시 무효화용 버전: style.css / motion.js 내용이 바뀌면 URL도 바뀐다
+_asset_hash = hashlib.md5()
+for _name in ("style.css", "js/motion.js"):
+    with open(os.path.join(app.static_folder, _name), "rb") as _f:
+        _asset_hash.update(_f.read())
+ASSET_VERSION = _asset_hash.hexdigest()[:8]
 
 
 @app.context_processor

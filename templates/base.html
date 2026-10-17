@@ -17,7 +17,8 @@
   <meta name="apple-mobile-web-app-title" content="듀온">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon-192.png') }}">
 </head>
-<body>
+{% set ep = request.endpoint or "" %}
+<body class="{{ 'is-admin' if me and me.is_admin else 'has-tabbar' }}">
   <header class="topbar">
     <a class="logo" href="{{ url_for('index') }}" aria-label="듀온 Duon">
       <span>Du</span><svg class="logo-o" viewBox="0 0 46 30" aria-hidden="true"><circle cx="17" cy="15" r="11" fill="none" stroke="#d96a94" stroke-width="2.6"/><circle cx="29" cy="15" r="11" fill="none" stroke="#efaac2" stroke-width="2.6"/></svg><span>n</span>
@@ -49,7 +50,35 @@
     </nav>
   </header>
 
-  <main class="container">
+  {% if not (me and me.is_admin) %}
+  {# 모바일 하단 탭바 (760px 이하에서만 보임) #}
+  <nav class="tabbar" aria-label="주요 메뉴">
+    {% set home_ep = 'home' if me else 'index' %}
+    <a class="tab {{ 'on' if ep in ('index', 'home') }}" href="{{ url_for(home_ep) }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg><span>홈</span>
+    </a>
+    <a class="tab {{ 'on' if ep in ('magazine', 'tips', 'tip_detail', 'news', 'mbti') }}" href="{{ url_for('magazine') }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M8 8h6M8 12h6"/></svg><span>매거진</span>
+    </a>
+    <a class="tab {{ 'on' if ep in ('places', 'trips', 'trip_detail') }}" href="{{ url_for('places') }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>데이트</span>
+    </a>
+    <a class="tab {{ 'on' if ep == 'fortune' }}" href="{{ url_for('fortune') }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.2 5.3L20 9l-4.4 3.8L17 18.5 12 15.6 7 18.5l1.4-5.7L4 9l5.8-.7z"/></svg><span>연애운</span>
+    </a>
+    {% if me %}
+    <a class="tab {{ 'on' if ep == 'me_page' }}" href="{{ url_for('me_page') }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>내 정보</span>
+    </a>
+    {% else %}
+    <a class="tab {{ 'on' if ep in ('login', 'register') }}" href="{{ url_for('login') }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>로그인</span>
+    </a>
+    {% endif %}
+  </nav>
+  {% endif %}
+
+  <main class="container page-enter">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, msg in messages %}
         <div class="flash flash-{{ category }}">{{ msg }}</div>
@@ -62,6 +91,7 @@
   <footer class="footer">듀온 · {{ current_year }} · 가치관과 취향으로 만나는 진짜 인연</footer>
 
   <script src="{{ url_for('static', filename='js/img-compress.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/motion.js', v=asset_v) }}" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
