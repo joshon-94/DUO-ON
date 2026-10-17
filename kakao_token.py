@@ -12,14 +12,14 @@
   2) python kakao_token.py            → 인증 URL이 출력됨. 브라우저로 접속해 로그인/동의.
   3) 이동된 주소창의 code=... 값(URL의 code 파라미터)을 복사.
   4) python kakao_token.py <code>     → refresh_token 이 출력됨.
-  5) Render 환경변수에 KAKAO_REST_API_KEY, KAKAO_REFRESH_TOKEN 등록 후 재배포.
+  5) Vercel 환경변수에 KAKAO_REST_API_KEY, KAKAO_REFRESH_TOKEN 등록 후 재배포.
 """
 import os
 import sys
 import requests
 
 REST_API_KEY = os.environ.get("KAKAO_REST_API_KEY", "여기에_REST_API_키_붙여넣기")
-REDIRECT_URI = "https://duon.onrender.com/oauth"  # 카카오 콘솔에 동일하게 등록
+REDIRECT_URI = "https://duo-on.vercel.app/oauth"  # 카카오 콘솔에 동일하게 등록
 
 
 def auth_url():
@@ -46,7 +46,7 @@ def exchange(code):
     data = res.json()
     print("\n[응답]", data)
     if "refresh_token" in data:
-        print("\n=== Render 환경변수에 넣으세요 ===")
+        print("\n=== Vercel 환경변수에 넣으세요 ===")
         print("KAKAO_REST_API_KEY =", REST_API_KEY)
         print("KAKAO_REFRESH_TOKEN =", data["refresh_token"])
     else:

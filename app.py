@@ -206,7 +206,7 @@ def _signup_message(user):
     return (
         "[듀온] 새 회원이 가입했어요!\n"
         "이름: %s\n성별: %s\n나이: %s세\n지역: %s\n이메일: %s\n"
-        "회원 관리: https://duon.onrender.com/admin"
+        "회원 관리: https://duo-on.vercel.app/admin"
         % (user.name, gender, age, user.location or "-", user.email)
     )
 
@@ -261,7 +261,7 @@ def notify_new_signup(user):
         template = {
             "object_type": "text",
             "text": text,
-            "link": {"web_url": "https://duon.onrender.com/admin"},
+            "link": {"web_url": "https://duo-on.vercel.app/admin"},
             "button_title": "회원 관리 열기",
         }
         requests.post(
