@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}오늘의 연애운 · 듀온{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('magazine') }}">← 연애 매거진</a>
+<h1 class="page-title">오늘의 연애운</h1>
+<p class="page-sub">{{ today.month }}월 {{ today.day }}일, 나의 별자리 연애운과 오늘의 타로 카드를 확인해 보세요. 매일 자정에 새로워져요.</p>
+
+<h2 class="section-title">💫 별자리 연애운</h2>
+<div class="zodiac-grid">
+  {% for key, name, emoji, period in zodiac %}
+  <a class="zodiac-chip {{ 'active' if sel_sign == key }}" href="{{ url_for('fortune', sign=key) }}">
+    <span class="zodiac-emoji">{{ emoji }}</span>
+    <span class="zodiac-name">{{ name }}</span>
+    <span class="zodiac-period">{{ period }}</span>
+  </a>
+  {% endfor %}
+</div>
+
+{% if love %}
+<div class="fortune-card">
+  <div class="fortune-head">
+    <span class="fortune-sign">{{ love.emoji }} {{ love.name }}</span>
+    <span class="fortune-hearts">{% for i in range(5) %}{{ '♥' if i < love.score else '♡' }}{% endfor %}</span>
+  </div>
+  <p class="fortune-msg">{{ love.message }}</p>
+  <p class="fortune-advice"><strong>오늘의 한마디</strong> {{ love.advice }}</p>
+  <div class="fortune-lucky">
+    <div><span>행운의 컬러</span><b><i class="color-dot" style="background: {{ love.color_hex }}"></i>{{ love.color_name }}</b></div>
+    <div><span>행운의 아이템</span><b>{{ love.item }}</b></div>
+    <div><span>행운의 숫자</span><b>{{ love.number }}</b></div>
+    <div><span>잘 맞는 별자리</span><b>{{ love.match[2] }} {{ love.match[1] }}</b></div>
+  </div>
+  <a class="fortune-place" href="https://map.naver.com/p/search/{{ (love.place.q or love.place.name) | urlencode }}" target="_blank" rel="noopener">
+    <span>📍 오늘의 행운 데이트 장소</span>
+    <b>{{ love.place.name }}</b>
+    <small>{{ love.place.region }} · {{ love.place.area }} — {{ love.place.tip }}</small>
+  </a>
+</div>
+{% else %}
+<p class="muted fortune-empty">위에서 내 별자리를 선택해 주세요.</p>
+{% endif %}
+
+<h2 class="section-title" id="tarot">🔮 오늘의 연애 타로</h2>
+{% if card %}
+<div class="tarot-result">
+  <div class="tarot-face">
+    <span class="tarot-emoji">{{ card.emoji }}</span>
+    <span class="tarot-name">{{ card.name }}</span>
+    <span class="tarot-en">{{ card.en }}</span>
+  </div>
+  <div class="tarot-body">
+    <p class="tarot-keyword">{{ card.keyword }}</p>
+    <p>{{ card.love }}</p>
+    <p class="fortune-advice"><strong>카드의 조언</strong> {{ card.advice }}</p>
+    <p class="muted tarot-again">타로는 하루 한 장! 내일 다시 뽑을 수 있어요.</p>
+  </div>
+</div>
+{% else %}
+<form class="tarot-draw" method="post" action="{{ url_for('fortune_tarot') }}">
+  <input type="hidden" name="sign" value="{{ sel_sign }}">
+  <div class="tarot-backs" aria-hidden="true"><span></span><span></span><span></span></div>
+  <p>마음속으로 궁금한 사람이나 관계를 떠올리고 카드를 뽑아보세요.</p>
+  <button class="btn" type="submit">카드 한 장 뽑기</button>
+</form>
+{% endif %}
+
+<h2 class="section-title">🏆 오늘의 별자리 연애운 순위</h2>
+<ol class="fortune-rank">
+  {% for r in ranking %}
+  <li>
+    <a href="{{ url_for('fortune', sign=r.key) }}">
+      <span class="rank-no">{{ loop.index }}</span>
+      <span class="rank-name">{{ r.emoji }} {{ r.name }}</span>
+      <span class="fortune-hearts small">{% for i in range(5) %}{{ '♥' if i < r.score else '♡' }}{% endfor %}</span>
+    </a>
+  </li>
+  {% endfor %}
+</ol>
+
+<p class="mbti-note">※ 오늘의 연애운과 타로는 재미로 보는 콘텐츠예요. 진짜 인연은 가치관과 진심에서 시작됩니다. 💛</p>
+
+<div class="mag-cta">
+  <p>연애운이 좋은 날, 새로운 인연을 만나볼까요?</p>
+  <a class="btn" href="{{ url_for('register') }}">듀온에서 찾아보기</a>
+</div>
+{% endblock %}

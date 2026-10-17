@@ -28,6 +28,9 @@ from content import (
 )
 from places import PLACES, REGIONS, CATEGORIES, SUBS, get_places
 from trips import TRIPS, LENGTHS, get_trips, get_trip
+from fortune import (
+    ZODIAC, daily_love, ranking, draw_tarot, tarot_card, today_kst
+)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "duon-dev-secret-change-me")
@@ -403,6 +406,32 @@ def tip_detail(slug):
 @app.route("/news")
 def news():
     return render_template("news.html", news=NEWS)
+
+
+@app.route("/fortune")
+def fortune():
+    sign = request.args.get("sign", "")
+    today = today_kst()
+    love = daily_love(sign, today) if sign else None
+    tarot = session.get("tarot")
+    card = None
+    if tarot and tarot.get("date") == today.isoformat():
+        card = tarot_card(tarot["idx"])
+    return render_template(
+        "fortune.html", zodiac=ZODIAC, sel_sign=sign, love=love,
+        ranking=ranking(today), card=card, today=today,
+    )
+
+
+@app.route("/fortune/tarot", methods=["POST"])
+def fortune_tarot():
+    """하루 한 장: 오늘 이미 뽑았으면 같은 카드를 유지한다."""
+    today = today_kst().isoformat()
+    tarot = session.get("tarot")
+    if not tarot or tarot.get("date") != today:
+        session["tarot"] = {"date": today, "idx": draw_tarot()}
+    sign = request.form.get("sign") or None
+    return redirect(url_for("fortune", sign=sign, _anchor="tarot"))
 
 
 @app.route("/places")

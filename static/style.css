@@ -42,6 +42,9 @@ body {
   color: var(--ink);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  /* 한글은 어절 단위로 줄바꿈, 너무 긴 단어(URL 등)만 강제로 끊음 */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 a { color: var(--ink); text-decoration: none; }
@@ -913,3 +916,89 @@ input:focus, textarea:focus { outline: none; border-color: var(--gold); }
 .trip-tips ul { margin: 6px 0 0; padding-left: 18px; }
 .trip-tips li { margin: 4px 0; }
 .trip-note { font-size: 12px; margin: 14px 0 32px; }
+
+/* ---------- 오늘의 연애운 · 타로 ---------- */
+.zodiac-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; margin: 0 0 20px; }
+.zodiac-chip {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 12px 6px; border-radius: 14px; border: 1px solid var(--line);
+  background: var(--card); text-decoration: none; transition: all .15s ease;
+}
+.zodiac-chip:hover { border-color: var(--gold); }
+.zodiac-chip.active { background: var(--gold); border-color: var(--gold); }
+.zodiac-chip.active .zodiac-name, .zodiac-chip.active .zodiac-period { color: #fff; }
+.zodiac-emoji { font-size: 22px; line-height: 1.2; }
+.zodiac-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+.zodiac-period { font-size: 11px; color: var(--muted); }
+
+.fortune-card {
+  display: flex; flex-direction: column; gap: 14px; margin: 0 0 36px;
+  background: var(--card); border: 1px solid var(--gold-line); border-radius: 20px;
+  padding: 24px; box-shadow: var(--shadow);
+}
+.fortune-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.fortune-sign { font-family: var(--serif); font-size: 22px; color: var(--ink); }
+.fortune-hearts { color: var(--gold); font-size: 20px; letter-spacing: 2px; }
+.fortune-hearts.small { font-size: 14px; letter-spacing: 1px; }
+.fortune-msg { font-size: 16px; line-height: 1.7; color: var(--ink); margin: 0; }
+.fortune-advice {
+  font-size: 14px; line-height: 1.55; color: var(--ink-2); margin: 0;
+  background: var(--cream); border-radius: 12px; padding: 10px 12px;
+}
+.fortune-advice strong { color: var(--gold-dark); margin-right: 4px; }
+.fortune-lucky { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+.fortune-lucky > div { display: flex; flex-direction: column; gap: 2px; background: var(--gold-soft); border-radius: 12px; padding: 10px 12px; }
+.fortune-lucky span { font-size: 11px; color: var(--muted); }
+.fortune-lucky b { font-size: 14px; color: var(--ink); display: flex; align-items: center; gap: 6px; }
+.color-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--line-strong); }
+.fortune-place {
+  display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; border-radius: 14px;
+  border: 1px dashed var(--gold-line); text-decoration: none;
+}
+.fortune-place span { font-size: 12px; font-weight: 700; color: var(--gold-dark); }
+.fortune-place b { font-size: 16px; color: var(--ink); }
+.fortune-place small { font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+.fortune-place:hover { background: var(--cream); }
+.fortune-empty { margin: 0 0 36px; }
+
+.tarot-draw {
+  display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;
+  background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 28px 20px; margin: 0 0 36px;
+}
+.tarot-draw p { margin: 0; color: var(--ink-2); font-size: 14px; }
+.tarot-backs { display: flex; gap: 10px; }
+.tarot-backs span {
+  width: 64px; height: 100px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  border: 3px solid #fff; box-shadow: var(--shadow);
+}
+.tarot-backs span:nth-child(1) { transform: rotate(-8deg); }
+.tarot-backs span:nth-child(3) { transform: rotate(8deg); }
+.tarot-result {
+  display: flex; gap: 20px; flex-wrap: wrap; margin: 0 0 36px;
+  background: var(--card); border: 1px solid var(--gold-line); border-radius: 20px; padding: 24px;
+}
+.tarot-face {
+  flex: 0 0 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  min-height: 210px; border-radius: 14px; padding: 12px; text-align: center;
+  background: linear-gradient(160deg, var(--cream) 0%, var(--gold-soft) 100%); border: 2px solid var(--gold-line);
+}
+.tarot-emoji { font-size: 44px; }
+.tarot-name { font-family: var(--serif); font-size: 18px; color: var(--ink); }
+.tarot-en { font-size: 11px; color: var(--muted); letter-spacing: .5px; }
+.tarot-body { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 10px; }
+.tarot-body p { margin: 0; font-size: 15px; line-height: 1.7; color: var(--ink); }
+.tarot-keyword { font-weight: 700; color: var(--gold-dark) !important; }
+.tarot-again { font-size: 12px !important; color: var(--muted) !important; }
+
+.fortune-rank { list-style: none; margin: 0 0 24px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.fortune-rank a {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 12px;
+  background: var(--card); border: 1px solid var(--line); text-decoration: none;
+}
+.fortune-rank a:hover { border-color: var(--gold); }
+.rank-no { width: 22px; font-weight: 700; color: var(--gold-dark); }
+.rank-name { flex: 1; font-size: 14px; color: var(--ink); }
+@media (max-width: 520px) {
+  .tarot-face { flex-basis: 100%; min-height: 160px; }
+}
